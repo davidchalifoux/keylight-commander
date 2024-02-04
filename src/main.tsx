@@ -1,14 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "@radix-ui/themes/styles.css";
 
-import { Theme } from "@radix-ui/themes";
+import "@mantine/core/styles.css";
+
+import { MantineProvider } from "@mantine/core";
+import { QueryClient, QueryClientProvider } from "react-query";
+
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <Theme appearance="dark">
-      <App />
-    </Theme>
+    <MantineProvider defaultColorScheme="dark">
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </MantineProvider>
   </React.StrictMode>
 );

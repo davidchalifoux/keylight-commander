@@ -10,19 +10,24 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@astronautlabs/mdns": "1.0.10",
-    "@radix-ui/themes": "^2.0.3",
+    "@mantine/core": "^7.5.1",
+    "@mantine/hooks": "^7.5.1",
+    "@tabler/icons-react": "^2.47.0",
     "@tauri-apps/api": "^1.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^1.5.8",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.2.1",
+    "postcss": "^8.4.33",
+    "postcss-preset-mantine": "^1.13.0",
+    "postcss-simple-vars": "^7.0.1",
     "typescript": "^5.0.2",
-    "vite": "^5.0.0",
-    "@tauri-apps/cli": "^1.5.8"
+    "vite": "^5.0.0"
   }
 }
