@@ -22,8 +22,6 @@ export const useKeylight = (args: { ipAddress: string; port: number }) => {
         }
       );
 
-      console.log(response);
-
       if (!response.ok) {
         throw new Error(response.status.toString());
       }

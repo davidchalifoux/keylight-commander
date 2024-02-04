@@ -337,7 +337,11 @@ const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               disabled={keylight.query.isLoading || keylight.query.isError}
               min={143}
               max={344}
-              label={(value) => `${value}K`}
+              label={(value) => {
+                // Rough equation to get Kelvin value from elgato keylight value for temperature
+                // Source: https://github.com/justinforlenza/keylight-control/blob/main/src/keylight.js
+                return `${Math.round((-4100 * value) / 201 + 1993300 / 201)}K`;
+              }}
               value={temperature}
               onChange={(value) => {
                 setTemperature(value);
