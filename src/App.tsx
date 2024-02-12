@@ -11,6 +11,8 @@ import {
 } from "@tabler/icons-react";
 import { KeylightListItem } from "./components/keylightListItem";
 import { ElgatoService, ElgatoServiceResponse } from "./lib/types";
+import { useCallback, useMemo } from "react";
+import { useKeylights } from "./lib/hooks/useKeylights";
 
 type State = {
   services: Record<string, ElgatoService>;
@@ -78,6 +80,26 @@ function App() {
     });
   }
 
+  const keylights = useKeylights();
+
+  const isEveryLightOn = useMemo(() => {
+    for (const keylight of keylights) {
+      if (keylight.query.data?.on === 0) {
+        return false;
+      }
+    }
+
+    return true;
+  }, [keylights]);
+
+  const toggleAllLights = useCallback(() => {
+    for (const keylight of keylights) {
+      const onState: number = isEveryLightOn ? 0 : 1;
+
+      keylight.mutation.mutate({ on: onState });
+    }
+  }, [isEveryLightOn]);
+
   return (
     <div>
       <Box bg={"dark.5"} h={"2.5rem"} px={"md"} w={"100%"}>
@@ -89,7 +111,10 @@ function App() {
           }}
         >
           <Flex align={"center"}>
-            <ActionIcon>
+            <ActionIcon
+              variant={isEveryLightOn ? "filled" : "default"}
+              onClick={() => toggleAllLights()}
+            >
               <IconPower style={{ width: "70%", height: "70%" }} />
             </ActionIcon>
           </Flex>
@@ -99,7 +124,11 @@ function App() {
           </Flex>
 
           <Flex align={"center"} justify={"right"} gap={"xs"}>
-            <ActionIcon variant="subtle" color="gray" onClick={scanServices}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={() => scanServices()}
+            >
               <IconScanEye style={{ width: "70%", height: "70%" }} />
             </ActionIcon>
 

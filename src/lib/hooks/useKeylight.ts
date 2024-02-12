@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Response, fetch, Body } from "@tauri-apps/api/http";
 
 type ApiResponse = {
@@ -10,9 +10,17 @@ type ApiResponse = {
   }[];
 };
 
+type QueryData = {
+  on: number;
+  brightness: number;
+  temperature: number;
+};
+
 export const useKeylight = (args: { ipAddress: string; port: number }) => {
-  const query = useQuery(
-    ["keylight", args],
+  const queryClient = useQueryClient();
+
+  const query = useQuery<QueryData>(
+    ["keylight", args.ipAddress, args.port],
     async () => {
       const response: Response<ApiResponse> = await fetch(
         `http://${args.ipAddress}:${args.port}/elgato/lights`,
@@ -45,29 +53,34 @@ export const useKeylight = (args: { ipAddress: string; port: number }) => {
         mutationArgs.temperature ?? query.data?.temperature ?? 143;
       const brightness = mutationArgs.brightness ?? query.data?.brightness ?? 0;
 
-      const response = await fetch(
-        `http://${args.ipAddress}:${args.port}/elgato/lights`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: Body.json({
-            numberOfLights: 1,
-            lights: [
-              {
-                on,
-                brightness,
-                temperature,
-              },
-            ],
-          }),
-        }
-      );
+      await fetch(`http://${args.ipAddress}:${args.port}/elgato/lights`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: Body.json({
+          numberOfLights: 1,
+          lights: [
+            {
+              on,
+              brightness,
+              temperature,
+            },
+          ],
+        }),
+      });
 
-      query.refetch();
+      return {
+        on,
+        temperature,
+        brightness,
+      } satisfies QueryData;
+    },
 
-      return response.data;
+    onSettled: async () => {
+      return await queryClient.invalidateQueries({
+        queryKey: ["keylight", args.ipAddress, args.port],
+      });
     },
   });
 

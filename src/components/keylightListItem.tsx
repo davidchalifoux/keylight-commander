@@ -22,6 +22,7 @@ import { ElgatoService } from "../lib/types";
 type KeylightListItemProps = {
   service: ElgatoService;
 };
+
 export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   const [isModalOpen, { open: openModal, close: closeModal }] =
     useDisclosure(false);
