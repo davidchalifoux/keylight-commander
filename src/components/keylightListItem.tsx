@@ -14,13 +14,20 @@ import {
 import { useDisclosure, useDebouncedValue } from "@mantine/hooks";
 import { IconPower, IconDotsVertical } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
-import { useServiceStore } from "../App";
 import { useKeylight } from "../lib/hooks/useKeylight";
 import { sleep } from "../lib/sleep";
 import { ElgatoService } from "../lib/types";
+import { useServiceStore } from "../lib/hooks/useServiceStore";
+import { useSettingsStore } from "../lib/hooks/useSettingsStore";
 
 type KeylightListItemProps = {
   service: ElgatoService;
+  globalBrightness: number | null;
+  setGlobalBrightness: (value: number | null) => void;
+  globalTemperature: number | null;
+  setGlobalTemperature: (value: number | null) => void;
+  globalOn: boolean | null;
+  setGlobalOn: (value: boolean | null) => void;
 };
 
 export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
@@ -28,10 +35,13 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
     useDisclosure(false);
 
   const serviceStore = useServiceStore();
+  const settingsStore = useSettingsStore();
 
+  const [isOn, setIsOn] = useState<boolean | undefined>();
   const [brightness, setBrightness] = useState<number | undefined>();
   const [temperature, setTemperature] = useState<number | undefined>();
 
+  const [debouncedIsOn] = useDebouncedValue(isOn, 100);
   const [debouncedBrightness] = useDebouncedValue(brightness, 100);
   const [debouncedTemperature] = useDebouncedValue(temperature, 100);
 
@@ -41,26 +51,59 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   });
 
   useEffect(() => {
-    if (!debouncedBrightness) return;
+    // Update power on device
+    if (debouncedIsOn === undefined) return;
+
+    keylight.mutation.mutate({ on: isOn ? 1 : 0 });
+  }, [debouncedIsOn]);
+
+  useEffect(() => {
+    // Update brightness on device
+    if (debouncedBrightness === undefined) return;
 
     keylight.mutation.mutate({ brightness: brightness });
   }, [debouncedBrightness]);
 
   useEffect(() => {
-    if (!debouncedTemperature) return;
+    // Update temperature
+    if (debouncedTemperature === undefined) return;
 
     keylight.mutation.mutate({ temperature: temperature });
   }, [debouncedTemperature]);
 
   useEffect(() => {
-    if (brightness && temperature) return;
+    // Sync global brightness
+    if (!props.globalBrightness) return;
 
-    if (keylight.query.data) {
-      setBrightness(keylight.query.data.brightness);
-      setTemperature(keylight.query.data.temperature);
-    }
+    setBrightness(props.globalBrightness);
+  }, [props.globalBrightness]);
+
+  useEffect(() => {
+    // Sync global temperature
+    if (!props.globalTemperature) return;
+
+    setTemperature(props.globalTemperature);
+  }, [props.globalTemperature]);
+
+  useEffect(() => {
+    // Sync global power
+    if (props.globalOn === null) return;
+
+    setIsOn(props.globalOn);
+  }, [props.globalOn]);
+
+  useEffect(() => {
+    // Update state from query
+    if (!keylight.query.data) return;
+
+    setBrightness(keylight.query.data.brightness);
+    setTemperature(keylight.query.data.temperature);
+    setIsOn(keylight.query.data.on === 1);
   }, [keylight.query.data]);
 
+  /**
+   * Flashes the light to identify it.
+   */
   async function identifyLight() {
     if (!keylight.query.data) return;
 
@@ -147,15 +190,17 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
           <Flex pr={"md"}>
             {/* Power button */}
             <ActionIcon
-              variant={keylight.query.data?.on === 0 ? "default" : "filled"}
+              variant={isOn ? "filled" : "default"}
               size="lg"
               radius="xl"
               aria-label="toggle power"
               disabled={keylight.query.isLoading || keylight.query.isError}
               onClick={() => {
-                keylight.mutation.mutate({
-                  on: keylight.query.data?.on === 0 ? 1 : 0,
-                });
+                if (settingsStore.isSyncEnabled) {
+                  props.setGlobalOn(!isOn);
+                }
+
+                setIsOn(!isOn);
               }}
             >
               <IconPower stroke={1.5} />
@@ -204,6 +249,10 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               }}
               value={temperature}
               onChange={(value) => {
+                if (settingsStore.isSyncEnabled) {
+                  props.setGlobalTemperature(value);
+                }
+
                 setTemperature(value);
               }}
             />
@@ -216,6 +265,10 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               label={(value) => `${value}%`}
               value={brightness}
               onChange={(value) => {
+                if (settingsStore.isSyncEnabled) {
+                  props.setGlobalBrightness(value);
+                }
+
                 setBrightness(value);
               }}
             />

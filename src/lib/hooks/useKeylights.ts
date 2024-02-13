@@ -1,16 +1,25 @@
-import { useServiceStore } from "../../App";
-import { useKeylight } from "./useKeylight";
+import { useServiceStore } from "./useServiceStore";
+import { getKeylightStatus } from "../fetchers/keylightStatus.get";
+import { useQueries } from "@tanstack/react-query";
 
+/**
+ * A hook that returns an array of keylight queries.
+ */
 export const useKeylights = () => {
   const serviceStore = useServiceStore();
-
-  const queries: ReturnType<typeof useKeylight>[] = [];
-
-  for (const service of Object.values(serviceStore.services)) {
-    queries.push(useKeylight({ ipAddress: service.ip_v4, port: service.port }));
-  }
-
-  console.log("usekeylights refreshed");
+  const queries = useQueries({
+    queries: serviceStore.getServices().map((service) => {
+      return {
+        queryKey: ["keylight", service.ip_v4, service.port],
+        queryFn: () =>
+          getKeylightStatus({
+            ipAddress: service.ip_v4,
+            port: service.port,
+          }),
+        staleTime: Infinity,
+      };
+    }),
+  });
 
   return queries;
 };

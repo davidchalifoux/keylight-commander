@@ -1,67 +1,30 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { ActionIcon, Box, Flex, Text } from "@mantine/core";
+import { ActionIcon, Box, Flex, Text, Tooltip } from "@mantine/core";
 import {
+  IconLock,
   IconPlus,
   IconPower,
   IconScanEye,
-  IconSettings,
 } from "@tabler/icons-react";
 import { KeylightListItem } from "./components/keylightListItem";
-import { ElgatoService, ElgatoServiceResponse } from "./lib/types";
-import { useCallback, useMemo } from "react";
+import { ElgatoServiceResponse } from "./lib/types";
+import { useCallback, useMemo, useState } from "react";
 import { useKeylights } from "./lib/hooks/useKeylights";
-
-type State = {
-  services: Record<string, ElgatoService>;
-};
-
-type Action = {
-  addService: (service: ElgatoService) => void;
-  setName: (mac_address: string, name: string) => void;
-  deleteService: (mac_address: string) => void;
-  getService: (mac_address: string) => ElgatoService | undefined;
-};
-
-export const useServiceStore = create(
-  persist<State & Action>(
-    (set, get) => ({
-      services: {},
-      getService: (mac_address: string) => get().services[mac_address],
-      addService: (service: ElgatoService) => {
-        set(() => ({
-          services: { ...get().services, [service.mac_address]: service },
-        }));
-      },
-      deleteService: (mac_address: string) => {
-        const services = get().services;
-        delete services[mac_address];
-        set({ services });
-      },
-      setName: (mac_address: string, name: string) => {
-        const service = get().services[mac_address];
-
-        if (!service) return;
-
-        set(() => ({
-          services: {
-            ...get().services,
-            [service.mac_address]: { ...service, name: name },
-          },
-        }));
-      },
-    }),
-    {
-      name: "saved-services",
-      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
-    }
-  )
-);
+import { useServiceStore } from "./lib/hooks/useServiceStore";
+import { useSettingsStore } from "./lib/hooks/useSettingsStore";
 
 function App() {
   const serviceStore = useServiceStore();
+  const settingsStore = useSettingsStore();
+
+  const keylights = useKeylights();
+
+  const [globalBrightness, setGlobalBrightness] = useState<number | null>(null);
+  const [globalTemperature, setGlobalTemperature] = useState<number | null>(
+    null
+  );
+  const [globalOn, setGlobalOn] = useState<boolean | null>(null);
 
   function scanServices() {
     invoke<ElgatoServiceResponse[]>("scan").then((res): void => {
@@ -80,11 +43,9 @@ function App() {
     });
   }
 
-  const keylights = useKeylights();
-
   const isEveryLightOn = useMemo(() => {
     for (const keylight of keylights) {
-      if (keylight.query.data?.on === 0) {
+      if (keylight.data?.on === 0) {
         return false;
       }
     }
@@ -93,11 +54,7 @@ function App() {
   }, [keylights]);
 
   const toggleAllLights = useCallback(() => {
-    for (const keylight of keylights) {
-      const onState: number = isEveryLightOn ? 0 : 1;
-
-      keylight.mutation.mutate({ on: onState });
-    }
+    setGlobalOn(isEveryLightOn ? false : true);
   }, [isEveryLightOn]);
 
   return (
@@ -124,6 +81,22 @@ function App() {
           </Flex>
 
           <Flex align={"center"} justify={"right"} gap={"xs"}>
+            <Tooltip
+              label={
+                settingsStore.isSyncEnabled
+                  ? "Turn off syncing"
+                  : "Turn on syncing"
+              }
+            >
+              <ActionIcon
+                variant={settingsStore.isSyncEnabled ? "filled" : "subtle"}
+                color={settingsStore.isSyncEnabled ? "blue" : "gray"}
+                onClick={() => settingsStore.toggleSync()}
+              >
+                <IconLock style={{ width: "70%", height: "70%" }} />
+              </ActionIcon>
+            </Tooltip>
+
             <ActionIcon
               variant="subtle"
               color="gray"
@@ -135,16 +108,21 @@ function App() {
             <ActionIcon variant="subtle" color="gray">
               <IconPlus style={{ width: "70%", height: "70%" }} />
             </ActionIcon>
-
-            <ActionIcon variant="subtle" color="gray">
-              <IconSettings style={{ width: "70%", height: "70%" }} />
-            </ActionIcon>
           </Flex>
         </div>
       </Box>
 
-      {Object.values(serviceStore.services).map((service) => (
-        <KeylightListItem service={service} key={service.mac_address} />
+      {serviceStore.getServices().map((service) => (
+        <KeylightListItem
+          key={service.mac_address}
+          service={service}
+          globalBrightness={globalBrightness}
+          setGlobalBrightness={setGlobalBrightness}
+          globalTemperature={globalTemperature}
+          setGlobalTemperature={setGlobalTemperature}
+          globalOn={globalOn}
+          setGlobalOn={setGlobalOn}
+        />
       ))}
     </div>
   );

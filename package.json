@@ -13,10 +13,10 @@
     "@mantine/core": "^7.5.1",
     "@mantine/hooks": "^7.5.1",
     "@tabler/icons-react": "^2.47.0",
+    "@tanstack/react-query": "^5.20.2",
     "@tauri-apps/api": "^1.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-query": "^3.39.3",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
