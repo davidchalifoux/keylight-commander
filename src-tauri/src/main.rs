@@ -79,9 +79,10 @@ fn scan() -> Vec<ElgatoService> {
 
 fn main() {
     let tray_menu = SystemTrayMenu::new();
+    let system_tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder::default()
-        .system_tray(SystemTray::new().with_menu(tray_menu))
+        .system_tray(system_tray)
         .on_system_tray_event(|app, event| match event {
             SystemTrayEvent::LeftClick { .. } => {
                 let window = app.get_window("main").unwrap();
