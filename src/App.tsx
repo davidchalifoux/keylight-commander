@@ -6,6 +6,7 @@ import {
   IconPlus,
   IconPower,
   IconScanEye,
+  IconShadow,
 } from "@tabler/icons-react";
 import { KeylightListItem } from "./components/keylightListItem";
 import { ElgatoServiceResponse } from "./lib/types";
@@ -73,7 +74,7 @@ function App() {
 
   return (
     <div>
-      <Box bg={"dark.5"} h={"2.5rem"} px={"md"} w={"100%"}>
+      <Box bg={"dark.6"} h={"2.5rem"} px={"md"} w={"100%"}>
         <div
           style={{
             display: "grid",
@@ -90,8 +91,11 @@ function App() {
             </ActionIcon>
           </Flex>
 
-          <Flex align={"center"} justify={"center"}>
-            <Text fw={600}>Keytrol</Text>
+          <Flex align={"center"} justify={"center"} gap={".25rem"}>
+            <IconShadow size={18} />
+            <Text fw={600} size="sm">
+              Keytrol
+            </Text>
           </Flex>
 
           <Flex align={"center"} justify={"right"} gap={"xs"}>

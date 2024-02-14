@@ -12,7 +12,12 @@ import {
   Text,
 } from "@mantine/core";
 import { useDisclosure, useDebouncedValue } from "@mantine/hooks";
-import { IconPower, IconDotsVertical } from "@tabler/icons-react";
+import {
+  IconPower,
+  IconDotsVertical,
+  IconBrightnessUp,
+  IconTemperature,
+} from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import { useKeylight } from "../lib/hooks/useKeylight";
 import { sleep } from "../lib/sleep";
@@ -239,7 +244,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
             </ActionIcon>
           </Flex>
           <Stack>
-            <Group justify="space-between">
+            <Group justify="space-between" wrap="nowrap">
               <Text>{`${props.service.name}`}</Text>
 
               {/* Modal button */}
@@ -270,44 +275,60 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
             )}
 
             {/* Color temp */}
-            <Slider
-              disabled={keylight.query.isLoading || keylight.query.isError}
-              color="rgba(0, 0, 0, 0)"
-              className="temp-slider"
-              min={143}
-              max={344}
-              label={(value) => {
-                // Rough equation to get Kelvin value from elgato keylight value for temperature
-                // Source: https://github.com/justinforlenza/keylight-control/blob/main/src/keylight.js
-                return `${Math.round((-4100 * value) / 201 + 1993300 / 201)}K`;
-              }}
-              value={temperature}
-              onChange={(value) => {
-                if (settingsStore.isSyncEnabled) {
-                  props.setGlobalTemperature(value);
-                }
+            <Flex gap={"sm"} align={"center"}>
+              <Slider
+                style={{ flexGrow: 1 }}
+                disabled={keylight.query.isLoading || keylight.query.isError}
+                color="rgba(0, 0, 0, 0)"
+                className="temp-slider"
+                min={143}
+                max={344}
+                label={(value) => {
+                  // Rough equation to get Kelvin value from elgato keylight value for temperature
+                  // Source: https://github.com/justinforlenza/keylight-control/blob/main/src/keylight.js
+                  return `${Math.round(
+                    (-4100 * value) / 201 + 1993300 / 201
+                  )}K`;
+                }}
+                value={temperature}
+                onChange={(value) => {
+                  if (settingsStore.isSyncEnabled) {
+                    props.setGlobalTemperature(value);
+                  }
 
-                setTemperature(value);
-              }}
-            />
+                  setTemperature(value);
+                }}
+              />
+
+              <ActionIcon variant="subtle" color="gray">
+                <IconTemperature style={{ width: "70%", height: "70%" }} />
+              </ActionIcon>
+            </Flex>
 
             {/* Brightness */}
-            <Slider
-              min={3}
-              max={100}
-              color="rgba(0, 0, 0, 0)"
-              className="brightness-slider"
-              disabled={keylight.query.isLoading || keylight.query.isError}
-              label={(value) => `${value}%`}
-              value={brightness}
-              onChange={(value) => {
-                if (settingsStore.isSyncEnabled) {
-                  props.setGlobalBrightness(value);
-                }
+            <Flex gap={"sm"} align={"center"}>
+              <Slider
+                style={{ flexGrow: 1 }}
+                min={3}
+                max={100}
+                color="rgba(0, 0, 0, 0)"
+                className="brightness-slider"
+                disabled={keylight.query.isLoading || keylight.query.isError}
+                label={(value) => `${value}%`}
+                value={brightness}
+                onChange={(value) => {
+                  if (settingsStore.isSyncEnabled) {
+                    props.setGlobalBrightness(value);
+                  }
 
-                setBrightness(value);
-              }}
-            />
+                  setBrightness(value);
+                }}
+              />
+
+              <ActionIcon variant="subtle" color="gray">
+                <IconBrightnessUp style={{ width: "70%", height: "70%" }} />
+              </ActionIcon>
+            </Flex>
           </Stack>
         </div>
       </Box>

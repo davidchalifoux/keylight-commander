@@ -2,7 +2,7 @@ div.temp-slider > div > div::before {
   background: linear-gradient(
     90deg,
     rgba(148, 209, 236, 1) 0%,
-    rgba(246, 239, 236, 1) 35%,
+    rgba(246, 239, 236, 1) 30%,
     rgba(254, 177, 100, 1) 100%
   ) !important;
 }

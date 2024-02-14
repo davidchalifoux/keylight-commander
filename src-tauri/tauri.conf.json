@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "keytrol",
-    "version": "0.0.0"
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -20,6 +20,17 @@
         "all": true,
         "request": true,
         "scope": ["http://*"]
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
       }
     },
     "systemTray": {
@@ -43,16 +54,19 @@
     },
     "windows": [
       {
-        "title": "keytrol",
+        "title": "",
         "width": 480,
         "height": 512,
+
+        "minWidth": 320,
+        "minHeight": 256,
 
         "fullscreen": false,
 
         "resizable": true,
-        "closable": false,
-        "minimizable": false,
-        "maximizable": false,
+        "closable": true,
+        "minimizable": true,
+        "maximizable": true,
         "decorations": true
       }
     ]
