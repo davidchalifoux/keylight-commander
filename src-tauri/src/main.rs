@@ -107,8 +107,9 @@ fn main() {
             }
             _ => {}
         })
-        .setup(|_app| {
+        .setup(|app| {
             println!("APPLICATION STARTED");
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             Ok(())
         })
