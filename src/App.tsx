@@ -24,7 +24,19 @@ function App() {
   const [globalTemperature, setGlobalTemperature] = useState<number | null>(
     null
   );
-  const [globalOn, setGlobalOn] = useState<boolean | null>(null);
+
+  /**
+   * Used to toggle all lights on or off.
+   *
+   * We use a count value to force a re-render when the value changes.
+   */
+  const [globalOn, setGlobalOn] = useState<{
+    value: boolean | null;
+    count: number;
+  }>({
+    value: null,
+    count: 0,
+  });
 
   function scanServices() {
     invoke<ElgatoServiceResponse[]>("scan").then((res): void => {
@@ -54,7 +66,9 @@ function App() {
   }, [keylights]);
 
   const toggleAllLights = useCallback(() => {
-    setGlobalOn(isEveryLightOn ? false : true);
+    setGlobalOn((prev) => {
+      return { value: isEveryLightOn ? false : true, count: prev.count + 1 };
+    });
   }, [isEveryLightOn]);
 
   return (
@@ -81,13 +95,7 @@ function App() {
           </Flex>
 
           <Flex align={"center"} justify={"right"} gap={"xs"}>
-            <Tooltip
-              label={
-                settingsStore.isSyncEnabled
-                  ? "Turn off syncing"
-                  : "Turn on syncing"
-              }
-            >
+            <Tooltip label={"Sync lights"} openDelay={500}>
               <ActionIcon
                 variant={settingsStore.isSyncEnabled ? "filled" : "subtle"}
                 color={settingsStore.isSyncEnabled ? "blue" : "gray"}
@@ -97,17 +105,21 @@ function App() {
               </ActionIcon>
             </Tooltip>
 
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              onClick={() => scanServices()}
-            >
-              <IconScanEye style={{ width: "70%", height: "70%" }} />
-            </ActionIcon>
+            <Tooltip label={"Scan for lights"} openDelay={500}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={() => scanServices()}
+              >
+                <IconScanEye style={{ width: "70%", height: "70%" }} />
+              </ActionIcon>
+            </Tooltip>
 
-            <ActionIcon variant="subtle" color="gray">
-              <IconPlus style={{ width: "70%", height: "70%" }} />
-            </ActionIcon>
+            <Tooltip label={"Manually add light"} openDelay={500}>
+              <ActionIcon variant="subtle" color="gray">
+                <IconPlus style={{ width: "70%", height: "70%" }} />
+              </ActionIcon>
+            </Tooltip>
           </Flex>
         </div>
       </Box>

@@ -26,8 +26,16 @@ type KeylightListItemProps = {
   setGlobalBrightness: (value: number | null) => void;
   globalTemperature: number | null;
   setGlobalTemperature: (value: number | null) => void;
-  globalOn: boolean | null;
-  setGlobalOn: (value: boolean | null) => void;
+  globalOn: {
+    value: boolean | null;
+    count: number;
+  };
+  setGlobalOn: React.Dispatch<
+    React.SetStateAction<{
+      value: boolean | null;
+      count: number;
+    }>
+  >;
 };
 
 export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
@@ -44,6 +52,12 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   const [debouncedIsOn] = useDebouncedValue(isOn, 100);
   const [debouncedBrightness] = useDebouncedValue(brightness, 100);
   const [debouncedTemperature] = useDebouncedValue(temperature, 100);
+
+  /** Used to prevent spamming identify */
+  const [isIdentifying, setIsIdentifying] = useState(false);
+
+  /** Used to stop syncing with the service */
+  const [isQuerySyncDisabled, setIsQuerySyncDisabled] = useState(false);
 
   const keylight = useKeylight({
     ipAddress: props.service.ip_v4,
@@ -65,7 +79,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   }, [debouncedBrightness]);
 
   useEffect(() => {
-    // Update temperature
+    // Update temperature on device
     if (debouncedTemperature === undefined) return;
 
     keylight.mutation.mutate({ temperature: temperature });
@@ -87,14 +101,15 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
 
   useEffect(() => {
     // Sync global power
-    if (props.globalOn === null) return;
+    if (props.globalOn.value === null) return;
 
-    setIsOn(props.globalOn);
+    setIsOn(props.globalOn.value);
   }, [props.globalOn]);
 
   useEffect(() => {
     // Update state from query
     if (!keylight.query.data) return;
+    if (isQuerySyncDisabled) return;
 
     setBrightness(keylight.query.data.brightness);
     setTemperature(keylight.query.data.temperature);
@@ -107,10 +122,18 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   async function identifyLight() {
     if (!keylight.query.data) return;
 
+    setIsIdentifying(true);
+    setIsQuerySyncDisabled(true);
+
     const previousValues = keylight.query.data;
 
+    if (previousValues.on === 0) {
+      await keylight.mutation.mutateAsync({ on: 1, brightness: 0 });
+      await sleep(300);
+    }
+
     for (let i = 0; i < 2; i++) {
-      await keylight.mutation.mutateAsync({ brightness: 100 });
+      await keylight.mutation.mutateAsync({ brightness: 25 });
 
       await sleep(300);
 
@@ -121,7 +144,13 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
 
     keylight.mutation.mutate({
       brightness: previousValues.brightness,
+      on: previousValues.on,
     });
+
+    setIsIdentifying(false);
+    setIsQuerySyncDisabled(false);
+
+    keylight.invalidate();
   }
 
   return (
@@ -167,6 +196,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
                 onClick={() => {
                   identifyLight();
                 }}
+                disabled={isIdentifying}
               >
                 Identify
               </Button>
@@ -197,7 +227,9 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               disabled={keylight.query.isLoading || keylight.query.isError}
               onClick={() => {
                 if (settingsStore.isSyncEnabled) {
-                  props.setGlobalOn(!isOn);
+                  props.setGlobalOn((prev) => {
+                    return { value: !isOn, count: prev.count + 1 };
+                  });
                 }
 
                 setIsOn(!isOn);
@@ -240,6 +272,8 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
             {/* Color temp */}
             <Slider
               disabled={keylight.query.isLoading || keylight.query.isError}
+              color="rgba(0, 0, 0, 0)"
+              className="temp-slider"
               min={143}
               max={344}
               label={(value) => {
@@ -261,6 +295,8 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
             <Slider
               min={3}
               max={100}
+              color="rgba(0, 0, 0, 0)"
+              className="brightness-slider"
               disabled={keylight.query.isLoading || keylight.query.isError}
               label={(value) => `${value}%`}
               value={brightness}

@@ -8,8 +8,10 @@ import { putKeylightStatus } from "../fetchers/keylightStatus.put";
 export const useKeylight = (args: { ipAddress: string; port: number }) => {
   const queryClient = useQueryClient();
 
+  const queryKey = ["keylight", args.ipAddress, args.port];
+
   const query = useQuery({
-    queryKey: ["keylight", args.ipAddress, args.port],
+    queryKey: queryKey,
     queryFn: () => getKeylightStatus(args),
     retry: 2,
     retryDelay: 1000,
@@ -45,7 +47,7 @@ export const useKeylight = (args: { ipAddress: string; port: number }) => {
 
     onSettled: async () => {
       return await queryClient.invalidateQueries({
-        queryKey: ["keylight", args.ipAddress, args.port],
+        queryKey: queryKey,
       });
     },
   });
@@ -53,5 +55,6 @@ export const useKeylight = (args: { ipAddress: string; port: number }) => {
   return {
     query: query,
     mutation: mutation,
+    invalidate: () => queryClient.invalidateQueries({ queryKey: queryKey }),
   };
 };
