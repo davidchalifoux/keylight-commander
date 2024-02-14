@@ -1,25 +1,28 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
-import { ActionIcon, Box, Flex, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Button, Flex, Text, Tooltip } from "@mantine/core";
 import {
-  IconLock,
   IconPlus,
   IconPower,
   IconScanEye,
+  IconSettings,
   IconShadow,
 } from "@tabler/icons-react";
-import { KeylightListItem } from "./components/keylightListItem";
+import { KeylightListItem } from "./components/KeylightListItem";
 import { ElgatoServiceResponse } from "./lib/types";
 import { useCallback, useMemo, useState } from "react";
 import { useKeylights } from "./lib/hooks/useKeylights";
 import { useServiceStore } from "./lib/hooks/useServiceStore";
-import { useSettingsStore } from "./lib/hooks/useSettingsStore";
+import { SettingsModal } from "./components/SettingsModal";
+import { useDisclosure } from "@mantine/hooks";
 
 function App() {
   const serviceStore = useServiceStore();
-  const settingsStore = useSettingsStore();
 
   const keylights = useKeylights();
+
+  const [isSettingsOpen, { open: openSettings, close: closeSettings }] =
+    useDisclosure(false);
 
   const [globalBrightness, setGlobalBrightness] = useState<number | null>(null);
   const [globalTemperature, setGlobalTemperature] = useState<number | null>(
@@ -74,6 +77,8 @@ function App() {
 
   return (
     <div>
+      <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
+
       <Box bg={"dark.6"} h={"2.5rem"} px={"md"} w={"100%"}>
         <div
           style={{
@@ -99,16 +104,6 @@ function App() {
           </Flex>
 
           <Flex align={"center"} justify={"right"} gap={"xs"}>
-            <Tooltip label={"Sync lights"} openDelay={500}>
-              <ActionIcon
-                variant={settingsStore.isSyncEnabled ? "filled" : "subtle"}
-                color={settingsStore.isSyncEnabled ? "blue" : "gray"}
-                onClick={() => settingsStore.toggleSync()}
-              >
-                <IconLock style={{ width: "70%", height: "70%" }} />
-              </ActionIcon>
-            </Tooltip>
-
             <Tooltip label={"Scan for lights"} openDelay={500}>
               <ActionIcon
                 variant="subtle"
@@ -119,14 +114,33 @@ function App() {
               </ActionIcon>
             </Tooltip>
 
-            <Tooltip label={"Manually add light"} openDelay={500}>
-              <ActionIcon variant="subtle" color="gray">
-                <IconPlus style={{ width: "70%", height: "70%" }} />
+            <Tooltip label={"Settings"} openDelay={500}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={() => openSettings()}
+              >
+                <IconSettings style={{ width: "70%", height: "70%" }} />
               </ActionIcon>
             </Tooltip>
           </Flex>
         </div>
       </Box>
+
+      {serviceStore.getServices().length === 0 && (
+        <Flex
+          align={"center"}
+          justify={"center"}
+          direction={"column"}
+          gap={"md"}
+          h={"100%"}
+        >
+          <Text size={"xl"} mt={"xl"}>
+            No lights found
+          </Text>
+          <Button onClick={() => scanServices()}>Scan for lights</Button>
+        </Flex>
+      )}
 
       {serviceStore.getServices().map((service) => (
         <KeylightListItem

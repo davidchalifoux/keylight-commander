@@ -51,14 +51,6 @@ fn scan() -> Vec<ElgatoService> {
                             mac_address: info.get_property("id").unwrap().val_str().into(),
                         })
                         .unwrap();
-
-                    // (*test).push(ElgatoService {
-                    //     full_name: info.get_fullname().into(),
-                    //     ip_v4: info.get_addresses_v4().iter().next().unwrap().to_string(),
-                    //     port: info.get_port(),
-                    //     model: info.get_property("md").unwrap().val_str().into(),
-                    //     mac_address: info.get_property("id").unwrap().val_str().into(),
-                    // });
                 }
                 _other_event => {
                     // println!("Received other event: {:?}", &other_event);
@@ -110,14 +102,7 @@ fn main() {
 
                 // hide window whenever it loses focus
                 if !is_focused && event.window().is_visible().unwrap_or_default() {
-                    // println!("Focus lost, hiding window");
-                    // event.window().hide().unwrap();
-                }
-
-                // scan for devices whenever window gains focus
-                if is_focused {
-                    println!("Focus gained");
-                    // std::thread::spawn(|| scan(&transfer_service));
+                    event.window().hide().unwrap();
                 }
             }
             _ => {}

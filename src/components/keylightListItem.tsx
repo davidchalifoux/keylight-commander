@@ -215,7 +215,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
                 Remove
               </Button>
             </Group>
-            <Button onClick={closeModal}>Done</Button>
+            <Button onClick={() => closeModal()}>Done</Button>
           </Group>
         </Stack>
       </Modal>
