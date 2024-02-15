@@ -1,9 +1,9 @@
 [package]
-name = "keytrol"
+name = "keylight-commander"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
+description = "Open source app for controlling Elgato Key Lights"
+authors = ["David Chalifoux"]
+license = "MIT"
 repository = ""
 edition = "2021"
 

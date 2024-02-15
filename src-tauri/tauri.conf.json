@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "keytrol",
+    "productName": "Keylight Commander",
     "version": "0.0.1"
   },
   "tauri": {
@@ -54,7 +54,7 @@
     },
     "windows": [
       {
-        "title": "",
+        "title": "Keylight Commander",
         "width": 480,
         "height": 512,
 

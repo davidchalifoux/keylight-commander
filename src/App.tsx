@@ -1,6 +1,14 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
-import { ActionIcon, Box, Button, Flex, Text, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Flex,
+  SimpleGrid,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import {
   IconPower,
   IconScanEye,
@@ -79,13 +87,7 @@ function App() {
       <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
 
       <Box bg={"dark.6"} h={"2.5rem"} px={"md"} w={"100%"}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            height: "100%",
-          }}
-        >
+        <SimpleGrid cols={2} h={"100%"}>
           <Flex align={"center"}>
             <ActionIcon
               variant={isEveryLightOn ? "filled" : "default"}
@@ -93,13 +95,6 @@ function App() {
             >
               <IconPower style={{ width: "70%", height: "70%" }} />
             </ActionIcon>
-          </Flex>
-
-          <Flex align={"center"} justify={"center"} gap={".25rem"}>
-            <IconShadow size={18} />
-            <Text fw={600} size="sm">
-              Keytrol
-            </Text>
           </Flex>
 
           <Flex align={"center"} justify={"right"} gap={"xs"}>
@@ -123,7 +118,7 @@ function App() {
               </ActionIcon>
             </Tooltip>
           </Flex>
-        </div>
+        </SimpleGrid>
       </Box>
 
       {serviceStore.getServices().length === 0 && (
