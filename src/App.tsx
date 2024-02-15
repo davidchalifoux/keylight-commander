@@ -9,12 +9,7 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import {
-  IconPower,
-  IconScanEye,
-  IconSettings,
-  IconShadow,
-} from "@tabler/icons-react";
+import { IconPower, IconScanEye, IconSettings } from "@tabler/icons-react";
 import { KeylightListItem } from "./components/KeylightListItem";
 import { ElgatoServiceResponse } from "./lib/types";
 import { useCallback, useMemo, useState } from "react";
