@@ -2,7 +2,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 
 import { ActionIcon, Box, Button, Flex, Text, Tooltip } from "@mantine/core";
 import {
-  IconPlus,
   IconPower,
   IconScanEye,
   IconSettings,

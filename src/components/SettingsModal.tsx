@@ -1,13 +1,4 @@
-import {
-  Anchor,
-  Button,
-  Checkbox,
-  Group,
-  Modal,
-  Space,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Button, Checkbox, Group, Modal, Stack } from "@mantine/core";
 import React from "react";
 import { useSettingsStore } from "../lib/hooks/useSettingsStore";
 
