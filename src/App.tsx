@@ -144,7 +144,7 @@ function App() {
       {serviceStore.getServices().map((service) => (
         <KeylightListItem
           key={service.mac_address}
-          service={service}
+          macAddress={service.mac_address}
           globalBrightness={globalBrightness}
           setGlobalBrightness={setGlobalBrightness}
           globalTemperature={globalTemperature}

@@ -4,12 +4,6 @@
 use mdns_sd::{ServiceDaemon, ServiceEvent};
 use tauri::{Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 
-// the payload type must implement `Serialize` and `Clone`.
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-    message: String,
-}
-
 #[derive(Clone, Debug, serde::Serialize)]
 struct ElgatoService {
     full_name: String,
@@ -92,17 +86,6 @@ fn main() {
                     println!("Showing window");
                     window.show().unwrap();
                     window.set_focus().unwrap();
-                }
-            }
-            _ => {}
-        })
-        .on_window_event(|event| match event.event() {
-            tauri::WindowEvent::Focused(focused) => {
-                let is_focused = focused.clone();
-
-                // hide window whenever it loses focus
-                if !is_focused && event.window().is_visible().unwrap_or_default() {
-                    event.window().hide().unwrap();
                 }
             }
             _ => {}

@@ -1,8 +1,5 @@
 import {
-  Modal,
   Stack,
-  TextInput,
-  Table,
   Group,
   Button,
   Box,
@@ -20,13 +17,12 @@ import {
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import { useKeylight } from "../lib/hooks/useKeylight";
-import { sleep } from "../lib/sleep";
-import { ElgatoService } from "../lib/types";
 import { useServiceStore } from "../lib/hooks/useServiceStore";
 import { useSettingsStore } from "../lib/hooks/useSettingsStore";
+import { KeylightEditModal } from "./KeylightEditModal";
 
 type KeylightListItemProps = {
-  service: ElgatoService;
+  macAddress: string;
   globalBrightness: number | null;
   setGlobalBrightness: (value: number | null) => void;
   globalTemperature: number | null;
@@ -50,6 +46,8 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   const serviceStore = useServiceStore();
   const settingsStore = useSettingsStore();
 
+  const service = serviceStore.getService(props.macAddress)!;
+
   const [isOn, setIsOn] = useState<boolean | undefined>();
   const [brightness, setBrightness] = useState<number | undefined>();
   const [temperature, setTemperature] = useState<number | undefined>();
@@ -58,15 +56,12 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   const [debouncedBrightness] = useDebouncedValue(brightness, 100);
   const [debouncedTemperature] = useDebouncedValue(temperature, 100);
 
-  /** Used to prevent spamming identify */
-  const [isIdentifying, setIsIdentifying] = useState(false);
-
   /** Used to stop syncing with the service */
   const [isQuerySyncDisabled, setIsQuerySyncDisabled] = useState(false);
 
   const keylight = useKeylight({
-    ipAddress: props.service.ip_v4,
-    port: props.service.port,
+    ipAddress: service.ip_v4,
+    port: service.port,
   });
 
   useEffect(() => {
@@ -121,104 +116,14 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
     setIsOn(keylight.query.data.on === 1);
   }, [keylight.query.data]);
 
-  /**
-   * Flashes the light to identify it.
-   */
-  async function identifyLight() {
-    if (!keylight.query.data) return;
-
-    setIsIdentifying(true);
-    setIsQuerySyncDisabled(true);
-
-    const previousValues = keylight.query.data;
-
-    if (previousValues.on === 0) {
-      await keylight.mutation.mutateAsync({ on: 1, brightness: 0 });
-      await sleep(300);
-    }
-
-    for (let i = 0; i < 2; i++) {
-      await keylight.mutation.mutateAsync({ brightness: 25 });
-
-      await sleep(300);
-
-      await keylight.mutation.mutateAsync({ brightness: 0 });
-
-      await sleep(300);
-    }
-
-    keylight.mutation.mutate({
-      brightness: previousValues.brightness,
-      on: previousValues.on,
-    });
-
-    setIsIdentifying(false);
-    setIsQuerySyncDisabled(false);
-
-    keylight.invalidate();
-  }
-
   return (
     <>
-      <Modal opened={isModalOpen} onClose={closeModal} title="Edit">
-        <Stack>
-          <TextInput
-            label="Name"
-            defaultValue={props.service.name}
-            onChange={(event) => {
-              serviceStore.setName(
-                props.service.mac_address,
-                event.currentTarget.value
-              );
-            }}
-          />
-
-          <Table>
-            <Table.Tbody>
-              <Table.Tr>
-                <Table.Td>IP Address</Table.Td>
-                <Table.Td>{props.service.ip_v4}</Table.Td>
-              </Table.Tr>
-              <Table.Tr>
-                <Table.Td>Port</Table.Td>
-                <Table.Td>{props.service.port}</Table.Td>
-              </Table.Tr>
-              <Table.Tr>
-                <Table.Td>MAC Address</Table.Td>
-                <Table.Td>{props.service.mac_address}</Table.Td>
-              </Table.Tr>
-              <Table.Tr>
-                <Table.Td>Model</Table.Td>
-                <Table.Td>{props.service.model}</Table.Td>
-              </Table.Tr>
-            </Table.Tbody>
-          </Table>
-
-          <Group justify="space-between">
-            <Group>
-              <Button
-                variant="default"
-                onClick={() => {
-                  identifyLight();
-                }}
-                disabled={isIdentifying}
-              >
-                Identify
-              </Button>
-
-              <Button
-                variant="default"
-                onClick={() => {
-                  serviceStore.deleteService(props.service.mac_address);
-                }}
-              >
-                Remove
-              </Button>
-            </Group>
-            <Button onClick={() => closeModal()}>Done</Button>
-          </Group>
-        </Stack>
-      </Modal>
+      <KeylightEditModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        macAddress={props.macAddress}
+        setIsQuerySyncDisabled={setIsQuerySyncDisabled}
+      />
 
       <Box py={"md"} px={"md"}>
         <div style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
@@ -245,7 +150,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
           </Flex>
           <Stack>
             <Group justify="space-between" wrap="nowrap">
-              <Text>{`${props.service.name}`}</Text>
+              <Text>{`${service.name}`}</Text>
 
               {/* Modal button */}
               <ActionIcon
