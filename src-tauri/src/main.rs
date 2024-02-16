@@ -92,6 +92,10 @@ fn main() {
         })
         .setup(|app| {
             println!("APPLICATION STARTED");
+
+            // Set the activation policy to Accessory on macOS
+            // This will prevent the app from appearing in the dock
+            #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             Ok(())
