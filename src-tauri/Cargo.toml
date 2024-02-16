@@ -14,6 +14,7 @@ tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
 tauri = { version = "1.5", features = [
+    "updater",
     "window-start-dragging",
     "window-minimize",
     "window-hide",
