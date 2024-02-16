@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { IconPower, IconScanEye, IconSettings } from "@tabler/icons-react";
-import { KeylightListItem } from "./components/KeylightListItem";
+import { KeylightListItem } from "./components/shuffle";
 import { ElgatoServiceResponse } from "./lib/types";
 import { useCallback, useMemo, useState } from "react";
 import { useKeylights } from "./lib/hooks/useKeylights";
