@@ -13,9 +13,10 @@ export type ElgatoServiceResponse = {
  * Service type stored in the the store
  */
 export type ElgatoService = {
+  id: string;
   name: string;
   ip_v4: string;
   port: number;
-  model: string;
-  mac_address: string;
+  model?: string;
+  mac_address?: string;
 };

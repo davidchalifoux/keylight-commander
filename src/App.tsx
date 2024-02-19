@@ -9,7 +9,12 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { IconPower, IconScanEye, IconSettings } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconPower,
+  IconScanEye,
+  IconSettings,
+} from "@tabler/icons-react";
 import { KeylightListItem } from "./components/KeylightListItem";
 import { ElgatoServiceResponse } from "./lib/types";
 import { useCallback, useMemo, useState } from "react";
@@ -17,6 +22,8 @@ import { useKeylights } from "./lib/hooks/useKeylights";
 import { useServiceStore } from "./lib/hooks/useServiceStore";
 import { SettingsModal } from "./components/SettingsModal";
 import { useDisclosure } from "@mantine/hooks";
+import { ManualAddModal } from "./components/ManualAddModal";
+import { nanoid } from "nanoid";
 
 function App() {
   const serviceStore = useServiceStore();
@@ -24,6 +31,8 @@ function App() {
   const keylights = useKeylights();
 
   const [isSettingsOpen, { open: openSettings, close: closeSettings }] =
+    useDisclosure(false);
+  const [isManualAddOpen, { open: openManualAdd, close: closeManualAdd }] =
     useDisclosure(false);
 
   const [globalBrightness, setGlobalBrightness] = useState<number | null>(null);
@@ -47,16 +56,11 @@ function App() {
   function scanServices() {
     invoke<ElgatoServiceResponse[]>("scan").then((res): void => {
       res.forEach((service) => {
-        const previousService = serviceStore.getService(service.mac_address);
-
-        if (previousService) {
-          serviceStore.addService({ ...service, name: previousService.name });
-        } else {
-          serviceStore.addService({
-            ...service,
-            name: service.full_name.split(".")[0],
-          });
-        }
+        serviceStore.addService({
+          ...service,
+          id: nanoid(),
+          name: service.full_name.split(".")[0],
+        });
       });
     });
   }
@@ -80,6 +84,7 @@ function App() {
   return (
     <div>
       <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
+      <ManualAddModal isOpen={isManualAddOpen} onClose={closeManualAdd} />
 
       <Box bg={"dark.6"} h={"2.5rem"} px={"md"} w={"100%"}>
         <SimpleGrid cols={2} h={"100%"}>
@@ -100,6 +105,16 @@ function App() {
                 onClick={() => scanServices()}
               >
                 <IconScanEye style={{ width: "70%", height: "70%" }} />
+              </ActionIcon>
+            </Tooltip>
+
+            <Tooltip label={"Manually add light"} openDelay={500}>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={() => openManualAdd()}
+              >
+                <IconPlus style={{ width: "70%", height: "70%" }} />
               </ActionIcon>
             </Tooltip>
 
@@ -133,8 +148,8 @@ function App() {
 
       {serviceStore.getServices().map((service) => (
         <KeylightListItem
-          key={service.mac_address}
-          macAddress={service.mac_address}
+          key={service.id}
+          itemId={service.id}
           globalBrightness={globalBrightness}
           setGlobalBrightness={setGlobalBrightness}
           globalTemperature={globalTemperature}

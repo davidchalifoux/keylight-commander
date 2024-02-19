@@ -3,51 +3,96 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { ElgatoService } from "../types";
 
 type State = {
-  services: Record<string, ElgatoService>;
+  services: ElgatoService[];
 };
 
 type Action = {
   addService: (service: ElgatoService) => void;
-  setName: (mac_address: string, name: string) => void;
-  deleteService: (mac_address: string) => void;
-  getService: (mac_address: string) => ElgatoService | undefined;
+  setName: (id: string, name: string) => void;
+  deleteService: (id: string) => void;
   getServices: () => ElgatoService[];
+  getServiceIndexById: (id: string) => number;
+  getServiceById: (id: string) => ElgatoService | undefined;
+  getServiceByMacAddress: (mac_address: string) => ElgatoService | undefined;
+  getServiceByIpAddress: (ip_address: string) => ElgatoService | undefined;
 };
 
 export const useServiceStore = create(
   persist<State & Action>(
     (set, get) => ({
-      services: {},
-      getService: (mac_address: string) => get().services[mac_address],
+      services: [],
       addService: (service: ElgatoService) => {
-        set(() => ({
-          services: { ...get().services, [service.mac_address]: service },
-        }));
+        if (service.mac_address) {
+          const existingServiceByMac = get().getServiceByMacAddress(
+            service.mac_address
+          );
+
+          if (existingServiceByMac) {
+            return;
+          }
+        }
+
+        const existingServiceByIp = get().getServiceByIpAddress(service.ip_v4);
+
+        if (existingServiceByIp) {
+          return;
+        }
+
+        set(() => {
+          return {
+            services: [...get().services, service],
+          };
+        });
       },
-      deleteService: (mac_address: string) => {
+      deleteService: (id: string) => {
+        const serviceIndex = get().getServiceIndexById(id);
         const services = get().services;
-        delete services[mac_address];
-        set({ services });
+
+        services.splice(serviceIndex, 1);
+        set(() => {
+          return {
+            services: services,
+          };
+        });
       },
-      setName: (mac_address: string, name: string) => {
-        const service = get().services[mac_address];
-
-        if (!service) return;
-
+      setName: (id: string, name: string) => {
         set(() => ({
-          services: {
-            ...get().services,
-            [service.mac_address]: { ...service, name: name },
-          },
+          services: get().services.map((service) => {
+            if (service.id === id) {
+              return { ...service, name };
+            }
+
+            return service;
+          }),
         }));
       },
-      getServices() {
-        return Object.values(get().services);
+      getServices: () => {
+        return get().services;
+      },
+      getServiceIndexById: (id: string) => {
+        return get()
+          .getServices()
+          .findIndex((service) => service.id === id);
+      },
+      getServiceById: (id: string) => {
+        return get()
+          .getServices()
+          .find((service) => service.id === id);
+      },
+      getServiceByMacAddress: (mac_address: string) => {
+        return get()
+          .getServices()
+          .find((service) => service.mac_address === mac_address);
+      },
+      getServiceByIpAddress: (ip_address: string) => {
+        return get()
+          .getServices()
+          .find((service) => service.ip_v4 === ip_address);
       },
     }),
     {
       name: "saved-services",
-      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

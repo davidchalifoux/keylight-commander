@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Keylight Commander",
-    "version": "0.0.1"
+    "version": "0.0.3"
   },
   "tauri": {
     "updater": {
@@ -38,12 +38,14 @@
         "minimize": true,
         "unmaximize": true,
         "unminimize": true,
-        "startDragging": true
+        "startDragging": true,
+        "setSkipTaskbar": true
       }
     },
     "systemTray": {
       "iconPath": "icons/icon.png",
-      "iconAsTemplate": true
+      "iconAsTemplate": true,
+      "menuOnLeftClick": false
     },
     "bundle": {
       "active": true,
@@ -71,9 +73,11 @@
 
         "fullscreen": false,
 
+        "skipTaskbar": true,
+
         "resizable": true,
         "closable": true,
-        "minimizable": true,
+        "minimizable": false,
         "maximizable": true,
         "decorations": true
       }

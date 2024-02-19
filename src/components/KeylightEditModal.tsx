@@ -6,7 +6,7 @@ import { sleep } from "../lib/sleep";
 
 type Props = {
   setIsQuerySyncDisabled: (value: boolean) => void;
-  macAddress: string;
+  itemId: string;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -14,7 +14,7 @@ type Props = {
 export const KeylightEditModal: React.FC<Props> = (props) => {
   const serviceStore = useServiceStore();
 
-  const service = serviceStore.getService(props.macAddress)!;
+  const service = serviceStore.getServiceById(props.itemId)!;
 
   const keylight = useKeylight({
     ipAddress: service.ip_v4,
@@ -68,10 +68,7 @@ export const KeylightEditModal: React.FC<Props> = (props) => {
           label="Name"
           defaultValue={service.name}
           onChange={(event) => {
-            serviceStore.setName(
-              service.mac_address,
-              event.currentTarget.value
-            );
+            serviceStore.setName(props.itemId, event.currentTarget.value);
           }}
         />
 
@@ -111,7 +108,7 @@ export const KeylightEditModal: React.FC<Props> = (props) => {
             <Button
               variant="default"
               onClick={() => {
-                serviceStore.deleteService(service.mac_address);
+                serviceStore.deleteService(props.itemId);
               }}
             >
               Remove
