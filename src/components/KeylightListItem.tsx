@@ -20,6 +20,7 @@ import { useKeylight } from "../lib/hooks/useKeylight";
 import { useServiceStore } from "../lib/hooks/useServiceStore";
 import { useSettingsStore } from "../lib/hooks/useSettingsStore";
 import { KeylightEditModal } from "./KeylightEditModal";
+import chroma from "chroma-js";
 
 type KeylightListItemProps = {
   itemId: string;
@@ -51,6 +52,10 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   const [isOn, setIsOn] = useState<boolean | undefined>();
   const [brightness, setBrightness] = useState<number | undefined>();
   const [temperature, setTemperature] = useState<number | undefined>();
+  /** The color temperature value in Kelvin. */
+  const [temperatureKelvin, setTemperatureKelvin] = useState<
+    number | undefined
+  >();
 
   const [debouncedIsOn] = useDebouncedValue(isOn, 100);
   const [debouncedBrightness] = useDebouncedValue(brightness, 100);
@@ -63,6 +68,12 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
     ipAddress: service.ip_v4,
     port: service.port,
   });
+
+  function setTempatureInKelvin(value: number) {
+    // Rough equation to get Kelvin value from elgato keylight value for temperature
+    // Source: https://github.com/justinforlenza/keylight-control/blob/main/src/keylight.js
+    setTemperatureKelvin(Math.round((-4100 * value) / 201 + 1993300 / 201));
+  }
 
   useEffect(() => {
     // Update power on device
@@ -113,6 +124,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
 
     setBrightness(keylight.query.data.brightness);
     setTemperature(keylight.query.data.temperature);
+    setTempatureInKelvin(keylight.query.data.temperature);
     setIsOn(keylight.query.data.on === 1);
   }, [keylight.query.data]);
 
@@ -188,12 +200,8 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
                 className="temp-slider"
                 min={143}
                 max={344}
-                label={(value) => {
-                  // Rough equation to get Kelvin value from elgato keylight value for temperature
-                  // Source: https://github.com/justinforlenza/keylight-control/blob/main/src/keylight.js
-                  return `${Math.round(
-                    (-4100 * value) / 201 + 1993300 / 201
-                  )}K`;
+                label={() => {
+                  return `${temperatureKelvin}K`;
                 }}
                 value={temperature}
                 onChange={(value) => {
@@ -202,6 +210,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
                   }
 
                   setTemperature(value);
+                  setTempatureInKelvin(value);
                 }}
               />
 
@@ -215,6 +224,11 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               <Slider
                 style={{
                   flexGrow: 1,
+                  "--brightness-slider-color": `rgb(${
+                    temperatureKelvin
+                      ? chroma.temperature(temperatureKelvin ?? 0).rgb()
+                      : "255,255,255"
+                  })`,
                 }}
                 min={3}
                 max={100}
