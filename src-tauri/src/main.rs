@@ -2,7 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use mdns_sd::{ServiceDaemon, ServiceEvent};
-use tauri::{Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri::{
+    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+};
 
 #[derive(Clone, Debug, serde::Serialize)]
 struct ElgatoService {
@@ -64,7 +66,13 @@ fn scan() -> Vec<ElgatoService> {
 }
 
 fn main() {
-    let tray_menu = SystemTrayMenu::new();
+    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+    let hide = CustomMenuItem::new("hide".to_string(), "Hide");
+
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(hide)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(quit);
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder::default()
@@ -73,19 +81,39 @@ fn main() {
             SystemTrayEvent::LeftClick { .. } => {
                 let window = app.get_window("main").unwrap();
 
-                let is_visible = window.is_visible().unwrap_or_default();
+                let item_handle = app.tray_handle().get_item("hide");
+
                 let is_focused = window.is_focused().unwrap_or_default();
 
-                if is_visible && is_focused {
-                    println!("Hiding window");
-                    window.hide().unwrap();
-                } else if is_visible {
-                    println!("Focusing window");
+                if !is_focused {
                     window.set_focus().unwrap();
+                    item_handle.set_title("Hide").unwrap();
                 } else {
-                    println!("Showing window");
-                    window.show().unwrap();
-                    window.set_focus().unwrap();
+                    window.hide().unwrap();
+                    item_handle.set_title("Show").unwrap();
+                }
+            }
+            SystemTrayEvent::MenuItemClick { id, .. } => {
+                // get a handle to the clicked menu item
+                // note that `tray_handle` can be called anywhere,
+                // just get an `AppHandle` instance with `app.handle()` on the setup hook
+                // and move it to another function or thread
+                let item_handle = app.tray_handle().get_item(&id);
+                match id.as_str() {
+                    "hide" => {
+                        let window = app.get_window("main").unwrap();
+
+                        let is_focused = window.is_focused().unwrap_or_default();
+                        if !is_focused {
+                            window.set_focus().unwrap();
+                            item_handle.set_title("Hide").unwrap();
+                        } else {
+                            window.hide().unwrap();
+                            item_handle.set_title("Show").unwrap();
+                        }
+                    }
+                    "quit" => app.exit(0),
+                    _ => {}
                 }
             }
             _ => {}
@@ -99,6 +127,21 @@ fn main() {
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             Ok(())
+        })
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                event.window().hide().unwrap();
+                api.prevent_close();
+            }
+            tauri::WindowEvent::Focused(focused) => {
+                let is_focused = focused.clone();
+
+                // hide window whenever it loses focus
+                if !is_focused {
+                    event.window().hide().unwrap();
+                }
+            }
+            _ => {}
         })
         .invoke_handler(tauri::generate_handler![scan])
         .run(tauri::generate_context!())
