@@ -22,7 +22,7 @@ import { useSettingsStore } from "../lib/hooks/useSettingsStore";
 import { KeylightEditModal } from "./KeylightEditModal";
 
 type KeylightListItemProps = {
-  macAddress: string;
+  itemId: string;
   globalBrightness: number | null;
   setGlobalBrightness: (value: number | null) => void;
   globalTemperature: number | null;
@@ -46,7 +46,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
   const serviceStore = useServiceStore();
   const settingsStore = useSettingsStore();
 
-  const service = serviceStore.getService(props.macAddress)!;
+  const service = serviceStore.getServiceById(props.itemId)!;
 
   const [isOn, setIsOn] = useState<boolean | undefined>();
   const [brightness, setBrightness] = useState<number | undefined>();
@@ -121,7 +121,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
       <KeylightEditModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        macAddress={props.macAddress}
+        itemId={props.itemId}
         setIsQuerySyncDisabled={setIsQuerySyncDisabled}
       />
 
@@ -148,7 +148,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               <IconPower stroke={1.5} />
             </ActionIcon>
           </Flex>
-          <Stack>
+          <Stack gap={"sm"}>
             <Group justify="space-between" wrap="nowrap">
               <Text>{`${service.name}`}</Text>
 
@@ -213,7 +213,9 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
             {/* Brightness */}
             <Flex gap={"sm"} align={"center"}>
               <Slider
-                style={{ flexGrow: 1 }}
+                style={{
+                  flexGrow: 1,
+                }}
                 min={3}
                 max={100}
                 color="rgba(0, 0, 0, 0)"
