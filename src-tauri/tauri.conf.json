@@ -74,6 +74,7 @@
         "fullscreen": false,
 
         "skipTaskbar": true,
+        "visible": false,
 
         "resizable": true,
         "closable": true,
