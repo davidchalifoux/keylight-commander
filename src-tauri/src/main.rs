@@ -102,17 +102,6 @@ fn main() {
 
             match event {
                 SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
-                    "hide" => {
-                        let window = app.get_window("main").unwrap();
-
-                        let is_visible = window.is_visible().unwrap_or_default();
-                        if !is_visible {
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
-                        } else {
-                            window.hide().unwrap();
-                        }
-                    }
                     "quit" => app.exit(0),
                     _ => {}
                 },

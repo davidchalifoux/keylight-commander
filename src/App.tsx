@@ -4,7 +4,9 @@ import {
   ActionIcon,
   Box,
   Button,
+  Divider,
   Flex,
+  ScrollArea,
   SimpleGrid,
   Text,
   Tooltip,
@@ -82,83 +84,121 @@ function App() {
   }, [isEveryLightOn]);
 
   return (
-    <div>
+    <>
       <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
       <ManualAddModal isOpen={isManualAddOpen} onClose={closeManualAdd} />
 
-      <Box bg={"dark.6"} h={"2.5rem"} px={"md"} w={"100%"}>
-        <SimpleGrid cols={2} h={"100%"}>
-          <Flex align={"center"}>
-            <ActionIcon
-              variant={isEveryLightOn ? "filled" : "default"}
-              onClick={() => toggleAllLights()}
-            >
-              <IconPower style={{ width: "70%", height: "70%" }} />
-            </ActionIcon>
-          </Flex>
-
-          <Flex align={"center"} justify={"right"} gap={"xs"}>
-            <Tooltip label={"Scan for lights"} openDelay={500}>
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={() => scanServices()}
-              >
-                <IconScanEye style={{ width: "70%", height: "70%" }} />
-              </ActionIcon>
-            </Tooltip>
-
-            <Tooltip label={"Manually add light"} openDelay={500}>
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={() => openManualAdd()}
-              >
-                <IconPlus style={{ width: "70%", height: "70%" }} />
-              </ActionIcon>
-            </Tooltip>
-
-            <Tooltip label={"Settings"} openDelay={500}>
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={() => openSettings()}
-              >
-                <IconSettings style={{ width: "70%", height: "70%" }} />
-              </ActionIcon>
-            </Tooltip>
-          </Flex>
-        </SimpleGrid>
-      </Box>
-
-      {serviceStore.getServices().length === 0 && (
-        <Flex
-          align={"center"}
-          justify={"center"}
-          direction={"column"}
-          gap={"md"}
-          h={"100%"}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: "auto 1fr",
+          height: "100vh",
+        }}
+      >
+        <Box
+          bg={"dark.6"}
+          h={"2.5rem"}
+          px={"md"}
+          w={"100%"}
+          style={{ userSelect: "none" }}
         >
-          <Text size={"xl"} mt={"xl"}>
-            No lights found
-          </Text>
-          <Button onClick={() => scanServices()}>Scan for lights</Button>
-        </Flex>
-      )}
+          <SimpleGrid cols={2} h={"100%"} spacing={"none"}>
+            <Flex align={"center"} data-tauri-drag-region>
+              <Tooltip label={"Toggle power for all lights"} openDelay={500}>
+                <ActionIcon
+                  variant={isEveryLightOn ? "filled" : "default"}
+                  onClick={() => toggleAllLights()}
+                >
+                  <IconPower
+                    style={{ width: "70%", height: "70%" }}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </Tooltip>
+            </Flex>
 
-      {serviceStore.getServices().map((service) => (
-        <KeylightListItem
-          key={service.id}
-          itemId={service.id}
-          globalBrightness={globalBrightness}
-          setGlobalBrightness={setGlobalBrightness}
-          globalTemperature={globalTemperature}
-          setGlobalTemperature={setGlobalTemperature}
-          globalOn={globalOn}
-          setGlobalOn={setGlobalOn}
-        />
-      ))}
-    </div>
+            <Flex
+              align={"center"}
+              justify={"right"}
+              gap={"xs"}
+              data-tauri-drag-region
+            >
+              <Tooltip label={"Scan for lights"} openDelay={500}>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => scanServices()}
+                >
+                  <IconScanEye
+                    style={{ width: "70%", height: "70%" }}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </Tooltip>
+
+              <Tooltip label={"Manually add light"} openDelay={500}>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => openManualAdd()}
+                >
+                  <IconPlus
+                    style={{ width: "70%", height: "70%" }}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </Tooltip>
+
+              <Tooltip label={"Settings"} openDelay={500}>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => openSettings()}
+                >
+                  <IconSettings
+                    style={{ width: "70%", height: "70%" }}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </Tooltip>
+            </Flex>
+          </SimpleGrid>
+        </Box>
+
+        <div style={{ overflow: "auto" }}>
+          {serviceStore.getServices().length === 0 && (
+            <Flex
+              align={"center"}
+              justify={"center"}
+              direction={"column"}
+              gap={"md"}
+            >
+              <Text size={"xl"} mt={"xl"}>
+                No lights found
+              </Text>
+              <Button onClick={() => scanServices()}>Scan for lights</Button>
+            </Flex>
+          )}
+
+          {serviceStore.getServices().map((service, i) => (
+            <div key={service.id}>
+              <KeylightListItem
+                itemId={service.id}
+                globalBrightness={globalBrightness}
+                setGlobalBrightness={setGlobalBrightness}
+                globalTemperature={globalTemperature}
+                setGlobalTemperature={setGlobalTemperature}
+                globalOn={globalOn}
+                setGlobalOn={setGlobalOn}
+              />
+              {i !== serviceStore.getServices().length - 1 && (
+                <Divider mx={"md"} my={"xs"} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 

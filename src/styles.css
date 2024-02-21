@@ -1,3 +1,10 @@
+html,
+body {
+  border-radius: 0.5rem;
+  height: 100%;
+  overflow: hidden;
+}
+
 div.temp-slider > div > div::before {
   background: linear-gradient(
     90deg,
