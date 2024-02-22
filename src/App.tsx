@@ -93,6 +93,10 @@ function App() {
           display: "grid",
           gridTemplateRows: "auto 1fr",
           height: "100vh",
+          background: "var(--mantine-color-body)",
+          border: "1px solid var(--mantine-color-default-border)",
+          borderRadius: ".5rem",
+          overflow: "hidden",
         }}
       >
         <Box
@@ -100,7 +104,10 @@ function App() {
           h={"2.5rem"}
           px={"md"}
           w={"100%"}
-          style={{ userSelect: "none" }}
+          style={{
+            userSelect: "none",
+            borderBottom: "1px solid var(--mantine-color-default-border)",
+          }}
         >
           <SimpleGrid cols={2} h={"100%"} spacing={"none"}>
             <Flex align={"center"} data-tauri-drag-region>
