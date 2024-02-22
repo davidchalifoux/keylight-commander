@@ -2,9 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use mdns_sd::{ServiceDaemon, ServiceEvent};
-use tauri::{
-    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
-};
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri_plugin_positioner::{Position, WindowExt};
 
 #[derive(Clone, Debug, serde::Serialize)]
 struct ElgatoService {
@@ -67,59 +66,15 @@ fn scan() -> Vec<ElgatoService> {
 
 fn main() {
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let hide = CustomMenuItem::new("hide".to_string(), "Hide");
 
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(hide)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
+    let tray_menu = SystemTrayMenu::new().add_item(quit);
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_positioner::init())
         .system_tray(system_tray)
-        .on_system_tray_event(|app, event| match event {
-            SystemTrayEvent::LeftClick { .. } => {
-                let window = app.get_window("main").unwrap();
-
-                let item_handle = app.tray_handle().get_item("hide");
-
-                let is_focused = window.is_focused().unwrap_or_default();
-
-                if !is_focused {
-                    window.set_focus().unwrap();
-                    item_handle.set_title("Hide").unwrap();
-                } else {
-                    window.hide().unwrap();
-                    item_handle.set_title("Show").unwrap();
-                }
-            }
-            SystemTrayEvent::MenuItemClick { id, .. } => {
-                // get a handle to the clicked menu item
-                // note that `tray_handle` can be called anywhere,
-                // just get an `AppHandle` instance with `app.handle()` on the setup hook
-                // and move it to another function or thread
-                let item_handle = app.tray_handle().get_item(&id);
-                match id.as_str() {
-                    "hide" => {
-                        let window = app.get_window("main").unwrap();
-
-                        let is_focused = window.is_focused().unwrap_or_default();
-                        if !is_focused {
-                            window.set_focus().unwrap();
-                            item_handle.set_title("Hide").unwrap();
-                        } else {
-                            window.hide().unwrap();
-                            item_handle.set_title("Show").unwrap();
-                        }
-                    }
-                    "quit" => app.exit(0),
-                    _ => {}
-                }
-            }
-            _ => {}
-        })
         .setup(|app| {
-            println!("APPLICATION STARTED");
+            println!("STARTED");
 
             // Set the activation policy to Accessory on macOS
             // This will prevent the app from appearing in the dock
@@ -134,14 +89,42 @@ fn main() {
                 api.prevent_close();
             }
             tauri::WindowEvent::Focused(focused) => {
-                let is_focused = focused.clone();
-
                 // hide window whenever it loses focus
-                if !is_focused {
+                if !focused {
+                    println!("Lost focus, hiding");
                     event.window().hide().unwrap();
                 }
             }
             _ => {}
+        })
+        .on_system_tray_event(|app, event| {
+            tauri_plugin_positioner::on_tray_event(app, &event);
+
+            match event {
+                SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+                    "quit" => app.exit(0),
+                    _ => {}
+                },
+                SystemTrayEvent::LeftClick { .. } => {
+                    println!("Left click on icon");
+                    let window = app.get_window("main").unwrap();
+
+                    let _ = window.move_window(Position::TrayCenter);
+
+                    let is_visible = window.is_visible().unwrap_or_default();
+
+                    if !is_visible {
+                        println!("Showing");
+
+                        window.show().unwrap();
+                        window.set_focus().unwrap();
+                    } else {
+                        println!("Hiding");
+                        window.hide().unwrap();
+                    }
+                }
+                _ => {}
+            }
         })
         .invoke_handler(tauri::generate_handler![scan])
         .run(tauri::generate_context!())

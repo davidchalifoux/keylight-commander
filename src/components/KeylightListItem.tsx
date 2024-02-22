@@ -1,3 +1,5 @@
+import React from "react";
+
 import {
   Stack,
   Group,
@@ -137,14 +139,13 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
         setIsQuerySyncDisabled={setIsQuerySyncDisabled}
       />
 
-      <Box py={"md"} px={"md"}>
+      <Box py={"sm"} px={"md"}>
         <div style={{ display: "grid", gridTemplateColumns: "auto 1fr" }}>
           <Flex pr={"md"}>
             {/* Power button */}
             <ActionIcon
               variant={isOn ? "filled" : "default"}
-              size="lg"
-              radius="xl"
+              size="md"
               aria-label="toggle power"
               disabled={keylight.query.isLoading || keylight.query.isError}
               onClick={() => {
@@ -157,28 +158,37 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
                 setIsOn(!isOn);
               }}
             >
-              <IconPower stroke={1.5} />
+              <IconPower stroke={1.5} style={{ width: "70%", height: "70%" }} />
             </ActionIcon>
           </Flex>
-          <Stack gap={"sm"}>
+          <Stack gap={"xs"}>
             <Group justify="space-between" wrap="nowrap">
-              <Text>{`${service.name}`}</Text>
+              <Text
+                size="sm"
+                style={{ userSelect: "none", WebkitUserSelect: "none" }}
+              >{`${service.name}`}</Text>
 
               {/* Modal button */}
               <ActionIcon
+                size={"md"}
                 variant="subtle"
                 color="gray"
                 onClick={openModal}
                 disabled={keylight.query.isLoading || keylight.query.isError}
               >
-                <IconDotsVertical style={{ width: "70%", height: "70%" }} />
+                <IconDotsVertical
+                  style={{ width: "70%", height: "70%" }}
+                  stroke={1.5}
+                />
               </ActionIcon>
             </Group>
 
             {/* Error message */}
             {keylight.query.isError && (
               <Group>
-                <Text c={"red"}>Unable to connect</Text>
+                <Text size="sm" c={"red"}>
+                  Unable to connect
+                </Text>
 
                 <Button
                   size="xs"
@@ -215,7 +225,10 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               />
 
               <ActionIcon variant="subtle" color="gray">
-                <IconTemperature style={{ width: "70%", height: "70%" }} />
+                <IconTemperature
+                  style={{ width: "70%", height: "70%" }}
+                  stroke={1.5}
+                />
               </ActionIcon>
             </Flex>
 
@@ -247,7 +260,10 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               />
 
               <ActionIcon variant="subtle" color="gray">
-                <IconBrightnessUp style={{ width: "70%", height: "70%" }} />
+                <IconBrightnessUp
+                  style={{ width: "70%", height: "70%" }}
+                  stroke={1.5}
+                />
               </ActionIcon>
             </Flex>
           </Stack>
