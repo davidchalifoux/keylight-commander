@@ -1,3 +1,14 @@
+html,
+body {
+  /* Makes the app transparent so we can have rounded corners */
+  background: transparent;
+}
+
+.mantine-Modal-overlay {
+  /* Prevents modal overlay from overflowing app radius */
+  border-radius: 0.5rem;
+}
+
 div.temp-slider > div > div::before {
   background: linear-gradient(
     90deg,
