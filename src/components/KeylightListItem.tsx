@@ -1,3 +1,5 @@
+import React from "react";
+
 import {
   Stack,
   Group,
@@ -7,7 +9,6 @@ import {
   ActionIcon,
   Slider,
   Text,
-  Divider,
 } from "@mantine/core";
 import { useDisclosure, useDebouncedValue } from "@mantine/hooks";
 import {

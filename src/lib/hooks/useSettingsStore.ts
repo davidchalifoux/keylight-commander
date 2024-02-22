@@ -11,7 +11,7 @@ type Action = {
 
 export const useSettingsStore = create(
   persist<State & Action>(
-    (set, _get) => ({
+    (set) => ({
       isSyncEnabled: false,
       toggleSync: () => {
         set((state) => ({ isSyncEnabled: !state.isSyncEnabled }));

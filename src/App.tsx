@@ -1,3 +1,5 @@
+import React from "react";
+
 import { invoke } from "@tauri-apps/api/tauri";
 
 import {
@@ -6,7 +8,6 @@ import {
   Button,
   Divider,
   Flex,
-  ScrollArea,
   SimpleGrid,
   Text,
   Tooltip,
@@ -27,7 +28,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { ManualAddModal } from "./components/ManualAddModal";
 import { nanoid } from "nanoid";
 
-function App() {
+export const App: React.FC = () => {
   const serviceStore = useServiceStore();
 
   const keylights = useKeylights();
@@ -207,6 +208,4 @@ function App() {
       </div>
     </>
   );
-}
-
-export default App;
+};
