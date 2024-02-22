@@ -7,9 +7,10 @@
   },
   "package": {
     "productName": "Keylight Commander",
-    "version": "0.0.6"
+    "version": "0.0.7"
   },
   "tauri": {
+    "macOSPrivateApi": true,
     "updater": {
       "active": true,
       "endpoints": [
@@ -65,8 +66,8 @@
     "windows": [
       {
         "title": "Keylight Commander",
-        "width": 480,
-        "height": 512,
+        "width": 384,
+        "height": 384,
 
         "minWidth": 320,
         "minHeight": 256,
@@ -74,12 +75,14 @@
         "fullscreen": false,
 
         "skipTaskbar": true,
+        "visible": false,
 
         "resizable": true,
         "closable": true,
         "minimizable": false,
         "maximizable": true,
-        "decorations": true
+        "decorations": false,
+        "transparent": true
       }
     ]
   }
