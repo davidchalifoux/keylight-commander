@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Stack, TextInput } from "@mantine/core";
+import { Button, Group, Modal, Stack, Text, TextInput } from "@mantine/core";
 import React from "react";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
@@ -19,6 +19,8 @@ type Props = {
 export const ManualAddModal: React.FC<Props> = (props) => {
   const serviceStore = useServiceStore();
 
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
   const form = useForm({
     initialValues: {
       name: "",
@@ -36,17 +38,27 @@ export const ManualAddModal: React.FC<Props> = (props) => {
     >
       <form
         onSubmit={form.onSubmit((values) => {
-          serviceStore.addService({
+          const { error } = serviceStore.addService({
             id: nanoid(),
             name: values.name,
             ip_v4: values.ipAddress,
             port: 9123,
           });
+
+          if (error) {
+            setErrorMessage(error);
+            return;
+          }
+
           form.reset();
           props.onClose();
         })}
       >
         <Stack>
+          <Text size="sm" c="red">
+            {errorMessage}
+          </Text>
+
           <TextInput
             withAsterisk
             label="Name"
