@@ -13,8 +13,13 @@ export const useKeylight = (args: { ipAddress: string; port: number }) => {
   const query = useQuery({
     queryKey: queryKey,
     queryFn: () => getKeylightStatus(args),
-    retry: 2,
-    retryDelay: 1000,
+    retry(failureCount) {
+      if (failureCount > 1) {
+        return false;
+      }
+
+      return true;
+    },
   });
 
   const mutation = useMutation({

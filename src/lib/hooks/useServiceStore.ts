@@ -7,7 +7,7 @@ type State = {
 };
 
 type Action = {
-  addService: (service: ElgatoService) => void;
+  addService: (service: ElgatoService) => { error: string | null };
   setName: (id: string, name: string) => void;
   deleteService: (id: string) => void;
   getServices: () => ElgatoService[];
@@ -28,14 +28,18 @@ export const useServiceStore = create(
           );
 
           if (existingServiceByMac) {
-            return;
+            return {
+              error: "Service already exists with this MAC address.",
+            };
           }
         }
 
         const existingServiceByIp = get().getServiceByIpAddress(service.ip_v4);
 
         if (existingServiceByIp) {
-          return;
+          return {
+            error: "Service already exists with this IP address.",
+          };
         }
 
         set(() => {
@@ -43,6 +47,10 @@ export const useServiceStore = create(
             services: [...get().services, service],
           };
         });
+
+        return {
+          error: null,
+        };
       },
       deleteService: (id: string) => {
         const serviceIndex = get().getServiceIndexById(id);
