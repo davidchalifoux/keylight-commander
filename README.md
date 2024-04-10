@@ -1,5 +1,5 @@
 <p>
-    <img src="./readme-images/icon.png" width="128" alt="Motrix App Icon" />
+    <img src="./readme-images/icon.png" width="128" alt="Keylight Commander App Icon" />
 </p>
 
 # Keylight Commander
@@ -8,6 +8,12 @@
 [![Github License](https://img.shields.io/github/license/davidchalifoux/keylight-commander?style=for-the-badge)](https://github.com/davidchalifoux/keylight-commander/blob/main/license.md)
 
 Keylight Commander is an open-source and cross-platform application for controlling [Elgato Key Lights](https://www.elgato.com/us/en/p/key-light).
+
+## Screenshot
+
+<p>
+    <img src="./readme-images/screenshot.png" width="430" alt="Keylight Commander App Icon" />
+</p>
 
 ## Features
 
