@@ -19,7 +19,7 @@ export const getKeylightStatus = async (args: Args) => {
     `http://${args.ipAddress}:${args.port}/elgato/lights`,
     {
       method: "GET",
-      timeout: 5,
+      timeout: 2,
     }
   );
 

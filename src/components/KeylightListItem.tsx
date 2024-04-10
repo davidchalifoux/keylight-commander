@@ -147,6 +147,7 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
               variant={isOn ? "filled" : "default"}
               size="md"
               aria-label="toggle power"
+              loading={keylight.query.isLoading}
               disabled={keylight.query.isLoading || keylight.query.isError}
               onClick={() => {
                 if (settingsStore.isSyncEnabled) {
@@ -185,87 +186,108 @@ export const KeylightListItem: React.FC<KeylightListItemProps> = (props) => {
 
             {/* Error message */}
             {keylight.query.isError && (
-              <Group>
+              <>
                 <Text size="sm" c={"red"}>
                   Unable to connect
                 </Text>
 
-                <Button
-                  size="xs"
-                  variant="default"
-                  onClick={() => keylight.query.refetch()}
-                  disabled={keylight.query.isFetching}
-                >
-                  Retry
-                </Button>
-              </Group>
+                <Group>
+                  <Button
+                    size="xs"
+                    variant="default"
+                    onClick={() => keylight.query.refetch()}
+                    disabled={keylight.query.isFetching}
+                  >
+                    Retry
+                  </Button>
+
+                  <Button
+                    size="xs"
+                    variant="filled"
+                    color="red"
+                    onClick={() => {
+                      serviceStore.deleteService(props.itemId);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </Group>
+              </>
             )}
 
             {/* Color temp */}
-            <Flex gap={"sm"} align={"center"}>
-              <Slider
-                style={{ flexGrow: 1 }}
-                disabled={keylight.query.isLoading || keylight.query.isError}
-                color="rgba(0, 0, 0, 0)"
-                className="temp-slider"
-                min={143}
-                max={344}
-                label={() => {
-                  return `${temperatureKelvin}K`;
-                }}
-                value={temperature}
-                onChange={(value) => {
-                  if (settingsStore.isSyncEnabled) {
-                    props.setGlobalTemperature(value);
-                  }
+            {!keylight.query.isError && (
+              <>
+                <Flex gap={"sm"} align={"center"}>
+                  <Slider
+                    style={{ flexGrow: 1 }}
+                    disabled={
+                      keylight.query.isLoading || keylight.query.isError
+                    }
+                    color="rgba(0, 0, 0, 0)"
+                    className="temp-slider"
+                    min={143}
+                    max={344}
+                    label={() => {
+                      return `${temperatureKelvin}K`;
+                    }}
+                    value={temperature}
+                    onChange={(value) => {
+                      if (settingsStore.isSyncEnabled) {
+                        props.setGlobalTemperature(value);
+                      }
 
-                  setTemperature(value);
-                  setTempatureInKelvin(value);
-                }}
-              />
+                      setTemperature(value);
+                      setTempatureInKelvin(value);
+                    }}
+                  />
 
-              <ActionIcon variant="subtle" color="gray">
-                <IconTemperature
-                  style={{ width: "70%", height: "70%" }}
-                  stroke={1.5}
-                />
-              </ActionIcon>
-            </Flex>
+                  <ActionIcon variant="subtle" color="gray">
+                    <IconTemperature
+                      style={{ width: "70%", height: "70%" }}
+                      stroke={1.5}
+                    />
+                  </ActionIcon>
+                </Flex>
 
-            {/* Brightness */}
-            <Flex gap={"sm"} align={"center"}>
-              <Slider
-                style={{
-                  flexGrow: 1,
-                  "--brightness-slider-color": `rgb(${
-                    temperatureKelvin
-                      ? chroma.temperature(temperatureKelvin ?? 0).rgb()
-                      : "255,255,255"
-                  })`,
-                }}
-                min={3}
-                max={100}
-                color="rgba(0, 0, 0, 0)"
-                className="brightness-slider"
-                disabled={keylight.query.isLoading || keylight.query.isError}
-                label={(value) => `${value}%`}
-                value={brightness}
-                onChange={(value) => {
-                  if (settingsStore.isSyncEnabled) {
-                    props.setGlobalBrightness(value);
-                  }
+                {/* Brightness */}
+                <Flex gap={"sm"} align={"center"}>
+                  <Slider
+                    style={{
+                      flexGrow: 1,
+                      "--brightness-slider-color": `rgb(${
+                        temperatureKelvin
+                          ? chroma.temperature(temperatureKelvin ?? 0).rgb()
+                          : "255,255,255"
+                      })`,
+                    }}
+                    min={3}
+                    max={100}
+                    color="rgba(0, 0, 0, 0)"
+                    className="brightness-slider"
+                    disabled={
+                      keylight.query.isLoading || keylight.query.isError
+                    }
+                    label={(value) => `${value}%`}
+                    value={brightness}
+                    onChange={(value) => {
+                      if (settingsStore.isSyncEnabled) {
+                        props.setGlobalBrightness(value);
+                      }
 
-                  setBrightness(value);
-                }}
-              />
+                      setBrightness(value);
+                    }}
+                  />
 
-              <ActionIcon variant="subtle" color="gray">
-                <IconBrightnessUp
-                  style={{ width: "70%", height: "70%" }}
-                  stroke={1.5}
-                />
-              </ActionIcon>
-            </Flex>
+                  <ActionIcon variant="subtle" color="gray">
+                    <IconBrightnessUp
+                      style={{ width: "70%", height: "70%" }}
+                      stroke={1.5}
+                    />
+                  </ActionIcon>
+                </Flex>
+              </>
+            )}
           </Stack>
         </div>
       </Box>
