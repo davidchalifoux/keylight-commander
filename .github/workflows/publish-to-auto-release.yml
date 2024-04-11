@@ -38,12 +38,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: "pnpm"
 
       - name: setup pnpm
         uses: pnpm/action-setup@v3
         with:
           version: 8
+          run_install: false
+
+      - name: install frontend dependencies
+        run: pnpm install
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -55,9 +58,6 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: "./src-tauri -> target"
-
-      - name: install frontend dependencies
-        run: pnpm install
 
       - uses: tauri-apps/tauri-action@v0
         env:
