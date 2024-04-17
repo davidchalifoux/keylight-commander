@@ -38,6 +38,9 @@ export const App: React.FC = () => {
   const [isManualAddOpen, { open: openManualAdd, close: closeManualAdd }] =
     useDisclosure(false);
 
+  /** True if the Rust backend is scanning for new services */
+  const [isScanning, setIsScanning] = useState(false);
+
   const [globalBrightness, setGlobalBrightness] = useState<number | null>(null);
   const [globalTemperature, setGlobalTemperature] = useState<number | null>(
     null
@@ -56,8 +59,15 @@ export const App: React.FC = () => {
     count: 0,
   });
 
-  function scanServices() {
-    invoke<ElgatoServiceResponse[]>("scan").then((res): void => {
+  /**
+   * Scans for services and adds them to the service store.
+   */
+  async function scanServices(): Promise<void> {
+    setIsScanning(true);
+
+    try {
+      const res = await invoke<ElgatoServiceResponse[]>("scan");
+
       res.forEach((service) => {
         serviceStore.addService({
           ...service,
@@ -65,7 +75,11 @@ export const App: React.FC = () => {
           name: service.full_name.split(".")[0],
         });
       });
-    });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsScanning(false);
+    }
   }
 
   const isEveryLightOn = useMemo(() => {
@@ -136,6 +150,7 @@ export const App: React.FC = () => {
                   variant="subtle"
                   color="gray"
                   onClick={() => scanServices()}
+                  loading={isScanning}
                 >
                   <IconScanEye
                     style={{ width: "70%", height: "70%" }}

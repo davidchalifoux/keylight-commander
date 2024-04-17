@@ -15,7 +15,7 @@ struct ElgatoService {
 }
 
 #[tauri::command]
-fn scan() -> Vec<ElgatoService> {
+async fn scan() -> Vec<ElgatoService> {
     let (service_sender, service_receiver) = flume::unbounded::<ElgatoService>();
 
     // Create a daemon
