@@ -2,7 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use mdns_sd::{ServiceDaemon, ServiceEvent};
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri::{
+    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+};
 use tauri_plugin_positioner::{Position, WindowExt};
 
 #[derive(Clone, Debug, serde::Serialize)]
@@ -65,9 +67,14 @@ async fn scan() -> Vec<ElgatoService> {
 }
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+    let quit_button = CustomMenuItem::new("quit".to_string(), "Quit");
+    let show_hide_button = CustomMenuItem::new("show".to_string(), "Show");
 
-    let tray_menu = SystemTrayMenu::new().add_item(quit);
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(show_hide_button)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(quit_button);
+
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder::default()
@@ -91,7 +98,6 @@ fn main() {
             tauri::WindowEvent::Focused(focused) => {
                 // hide window whenever it loses focus
                 if !focused {
-                    println!("Lost focus, hiding");
                     event.window().hide().unwrap();
                 }
             }
@@ -103,10 +109,18 @@ fn main() {
             match event {
                 SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
                     "quit" => app.exit(0),
+                    "show" => {
+                        let window = app.get_window("main").unwrap();
+
+                        let _ = window.move_window(Position::TrayCenter);
+
+                        window.show().unwrap();
+                        window.set_focus().unwrap();
+                    }
                     _ => {}
                 },
+
                 SystemTrayEvent::LeftClick { .. } => {
-                    println!("Left click on icon");
                     let window = app.get_window("main").unwrap();
 
                     let _ = window.move_window(Position::TrayCenter);
@@ -114,12 +128,9 @@ fn main() {
                     let is_visible = window.is_visible().unwrap_or_default();
 
                     if !is_visible {
-                        println!("Showing");
-
                         window.show().unwrap();
                         window.set_focus().unwrap();
                     } else {
-                        println!("Hiding");
                         window.hide().unwrap();
                     }
                 }
