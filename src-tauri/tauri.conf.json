@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Keylight Commander",
-    "version": "0.0.10"
+    "version": "0.0.11"
   },
   "tauri": {
     "macOSPrivateApi": true,
