@@ -112,10 +112,20 @@ fn main() {
                     "show" => {
                         let window = app.get_window("main").unwrap();
 
-                        let _ = window.move_window(Position::TrayCenter);
-
                         window.show().unwrap();
                         window.set_focus().unwrap();
+
+                        // Don't set window position on Linux
+                        // TODO: Verify tray position isn't available on Linux
+
+                        #[cfg(target_os = "macos")]
+                        let _ = window.move_window(Position::TrayCenter);
+
+                        #[cfg(target_os = "windows")]
+                        let _ = window.move_window(Position::TrayCenter);
+
+                        #[cfg(target_os = "linux")]
+                        let _ = window.move_window(Position::TopRight);
                     }
                     _ => {}
                 },
