@@ -116,7 +116,7 @@ fn main() {
                         window.set_focus().unwrap();
 
                         // Don't set window position on Linux
-                        // TODO: Verify tray position isn't available on Linux
+                        // This was confirmed here: https://github.com/tauri-apps/plugins-workspace/issues/1232#issuecomment-2068980516
 
                         #[cfg(target_os = "macos")]
                         let _ = window.move_window(Position::TrayCenter);
