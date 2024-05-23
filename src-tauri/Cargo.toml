@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = [ "macos-private-api", "window-set-skip-taskbar", "window-unmaximize", "window-show", "window-close", "window-unminimize", "window-hide", "window-minimize", "window-start-dragging", "window-maximize",
+tauri = { version = "1.6", features = [ "macos-private-api", "window-set-skip-taskbar", "window-unmaximize", "window-show", "window-close", "window-unminimize", "window-hide", "window-minimize", "window-start-dragging", "window-maximize",
     "updater",
     "http-all",
     "system-tray",
