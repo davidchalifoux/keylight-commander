@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Cross-platform application for controlling Elgato Key Lights."
 authors = ["David Chalifoux"]
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/davidchalifoux/keylight-commander"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
