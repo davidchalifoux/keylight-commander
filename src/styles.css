@@ -1,31 +1,29 @@
-html,
-body {
-  /* Makes the app transparent so we can have rounded corners */
-  background: transparent;
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@layer base {
+	html,
+	body {
+		height: 100%;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		color: var(--color-neutral-100);
+	}
+
+	html {
+		background: var(--color-neutral-900);
+		border: 1px solid var(--color-neutral-700);
+	}
 }
 
-.mantine-Modal-overlay {
-  /* Prevents modal overlay from overflowing app radius */
-  border-radius: 0.5rem;
+:root {
+	--radius: 0.6rem;
 }
 
-div.temp-slider > div > div::before {
-  background: linear-gradient(
-    90deg,
-    rgba(245, 243, 255, 1) 0%,
-    rgba(246, 239, 236, 1) 30%,
-    rgba(255, 177, 101, 1) 100%
-  ) !important;
-}
-
-div.brightness-slider {
-  --brightness-slider-color: rgba(255, 255, 255, 1);
-}
-
-div.brightness-slider > div > div::before {
-  background: linear-gradient(
-    90deg,
-    rgb(0, 0, 0) 0%,
-    var(--brightness-slider-color) 100%
-  ) !important;
+@theme inline {
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
 }
