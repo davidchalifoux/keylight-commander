@@ -61,7 +61,7 @@ function RouteComponent() {
 				</div>
 			}
 		>
-			<div className="p-2 flex flex-col gap-2">
+			<div className="p-2 flex flex-col gap-4">
 				<Table>
 					<TableHeader>
 						<TableRow>
@@ -127,6 +127,15 @@ function RouteComponent() {
 						</TableRow>
 					</TableBody>
 				</Table>
+
+				<div>
+					<Button
+						disabled={keylight.identify.isPending}
+						onClick={() => keylight.identify.mutate()}
+					>
+						Identify
+					</Button>
+				</div>
 			</div>
 		</Layout>
 	);
