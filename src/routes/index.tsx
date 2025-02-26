@@ -156,11 +156,6 @@ function Keylight(props: KeylightProps) {
 		return keylight.power ? "default" : "secondary";
 	}
 
-	const disabled =
-		keylight.stateQuery.error !== null ||
-		keylight.configQuery.error !== null ||
-		!keylight.stateQuery.isFetched;
-
 	return (
 		<TooltipProvider>
 			<div className="grid grid-cols-[auto_1fr_auto] grid-rows-3 gap-x-4 items-center py-2">
@@ -172,7 +167,7 @@ function Keylight(props: KeylightProps) {
 							onClick={() => {
 								keylight.setPower(keylight.power === 0 ? 1 : 0);
 							}}
-							disabled={disabled}
+							disabled={keylight.disabled}
 						>
 							<Power />
 						</Button>
@@ -215,7 +210,7 @@ function Keylight(props: KeylightProps) {
 					<TemperatureSlider
 						value={[keylight.temperature]}
 						onValueChange={(value) => keylight.setTemperature(value[0])}
-						disabled={disabled}
+						disabled={keylight.disabled}
 						min={143}
 						max={344}
 					/>
@@ -236,7 +231,7 @@ function Keylight(props: KeylightProps) {
 					{/* Brightness */}
 					<Slider
 						value={[keylight.brightness]}
-						disabled={disabled}
+						disabled={keylight.disabled}
 						onValueChange={(value) => keylight.setBrightness(value[0])}
 						min={3}
 						max={100}
@@ -245,7 +240,7 @@ function Keylight(props: KeylightProps) {
 
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button variant="ghost" size="icon-sm" disabled={disabled}>
+						<Button variant="ghost" size="icon-sm" disabled={keylight.disabled}>
 							<Sun />
 						</Button>
 					</TooltipTrigger>
