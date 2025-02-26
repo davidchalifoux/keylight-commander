@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getKeylightStateQueryOptions,
 	type GetKeylightStateResponse,
@@ -102,7 +102,10 @@ export const useKeylight = (args: { hostname: string }) => {
 		setPower(globalPower.state);
 	}, [globalPower?.id]);
 
-	async function setBrightness(value: number) {
+	async function setBrightness(
+		value: number,
+		options?: { ignoreGlobalSync: boolean },
+	) {
 		await queryClient.cancelQueries({
 			queryKey: getKeylightStateQueryOptions({ hostname: args.hostname })
 				.queryKey,
@@ -126,12 +129,15 @@ export const useKeylight = (args: { hostname: string }) => {
 			},
 		});
 
-		if (globalSync) {
+		if (globalSync && !options?.ignoreGlobalSync) {
 			setGlobalBrightness(value);
 		}
 	}
 
-	async function setTemperature(value: number) {
+	async function setTemperature(
+		value: number,
+		options?: { ignoreGlobalSync: boolean },
+	) {
 		await queryClient.cancelQueries({
 			queryKey: getKeylightStateQueryOptions({ hostname: args.hostname })
 				.queryKey,
@@ -155,12 +161,15 @@ export const useKeylight = (args: { hostname: string }) => {
 			},
 		});
 
-		if (globalSync) {
+		if (globalSync && !options?.ignoreGlobalSync) {
 			setGlobalTemperature(value);
 		}
 	}
 
-	async function setPower(value: number) {
+	async function setPower(
+		value: number,
+		options?: { ignoreGlobalSync: boolean },
+	) {
 		await queryClient.cancelQueries({
 			queryKey: getKeylightStateQueryOptions({ hostname: args.hostname })
 				.queryKey,
@@ -184,7 +193,7 @@ export const useKeylight = (args: { hostname: string }) => {
 			},
 		});
 
-		if (globalSync) {
+		if (globalSync && !options?.ignoreGlobalSync) {
 			setGlobalPower(value);
 		}
 	}
@@ -213,6 +222,28 @@ export const useKeylight = (args: { hostname: string }) => {
 		});
 	}
 
+	const identify = useMutation({
+		mutationFn: async () => {
+			const previousState = stateQuery.data;
+
+			await setPower(1, { ignoreGlobalSync: true });
+
+			for (let i = 0; i < 3; i++) {
+				await setBrightness(50, { ignoreGlobalSync: true });
+				await new Promise((resolve) => setTimeout(resolve, 500));
+				await setBrightness(0, { ignoreGlobalSync: true });
+				await new Promise((resolve) => setTimeout(resolve, 500));
+			}
+
+			if (previousState) {
+				await setPower(previousState.on, { ignoreGlobalSync: true });
+				await setBrightness(previousState.brightness, {
+					ignoreGlobalSync: true,
+				});
+			}
+		},
+	});
+
 	return {
 		stateQuery: stateQuery,
 		configQuery: configQuery,
@@ -223,5 +254,6 @@ export const useKeylight = (args: { hostname: string }) => {
 		power: state.power,
 		setPower: setPower,
 		setDisplayName: setDisplayName,
+		identify: identify,
 	};
 };
