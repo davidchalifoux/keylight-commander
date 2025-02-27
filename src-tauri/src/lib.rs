@@ -1,4 +1,9 @@
 use mdns_sd::{ServiceDaemon, ServiceEvent};
+use tauri::{
+    menu::{Menu, MenuItem, PredefinedMenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    Manager,
+};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[derive(Clone, Debug, serde::Serialize)]
@@ -65,6 +70,70 @@ pub fn run() {
             // This will prevent the app from appearing in the dock
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            let menu = Menu::with_items(
+                app,
+                &[
+                    &MenuItem::with_id(app, "show", "Show (Always on top)", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "show-alt", "Show", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?,
+                    &PredefinedMenuItem::separator(app)?,
+                    &MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?,
+                ],
+            )?;
+
+            TrayIconBuilder::new()
+                .menu(&menu)
+                .show_menu_on_left_click(false)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "show" => {
+                        let window = app.get_webview_window("main").unwrap();
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                        let _ = window.set_always_on_top(true);
+                    }
+                    "show-alt" => {
+                        let window = app.get_webview_window("main").unwrap();
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                    "hide" => {
+                        let window = app.get_webview_window("main").unwrap();
+                        let _ = window.hide();
+                    }
+                    "quit" => {
+                        println!("quit menu item was clicked");
+                        app.exit(0);
+                    }
+                    _ => {
+                        println!("menu item {:?} not handled", event.id);
+                    }
+                })
+                .on_tray_icon_event(|tray, event| match event {
+                    TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } => {
+                        // Left click released
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            let visible = window.is_visible().unwrap();
+
+                            if visible {
+                                let _ = window.hide();
+                            } else {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                                let _ = window.set_always_on_top(true);
+                            }
+                        }
+                    }
+                    _ => {
+                        println!("unhandled event {event:?}");
+                    }
+                })
+                .build(app)?;
 
             #[cfg(desktop)]
             let _ = app

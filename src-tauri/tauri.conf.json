@@ -29,6 +29,7 @@
         "minWidth": 400,
         "height": 400,
         "minHeight": 300,
+        "center": true,
         "decorations": false,
         "transparent": true,
         "skipTaskbar": true
