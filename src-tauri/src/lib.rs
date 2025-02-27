@@ -35,11 +35,22 @@ async fn scan() -> Vec<ElgatoService> {
                 ServiceEvent::ServiceResolved(info) => {
                     println!("Found new keylight: {}", info.get_hostname());
 
-                    service_sender
-                        .send(ElgatoService {
-                            hostname: info.get_hostname().to_string(),
-                        })
-                        .unwrap();
+                    if cfg!(target_os = "windows") {
+                        // On Windows, we need to use the IP
+                        if let Some(address) = info.get_addresses_v4().iter().next() {
+                            service_sender
+                                .send(ElgatoService {
+                                    hostname: address.to_string(),
+                                })
+                                .unwrap();
+                        }
+                    } else {
+                        service_sender
+                            .send(ElgatoService {
+                                hostname: info.get_hostname().to_string(),
+                            })
+                            .unwrap();
+                    }
                 }
                 _other_event => {
                     // println!("Received other event: {:?}", &other_event);
