@@ -18,34 +18,40 @@ export function useScan() {
 	return useQuery({
 		queryKey: ["keylights"],
 		queryFn: async () => {
-			const res = await invoke("scan");
+			try {
+				const res = await invoke("scan");
 
-			const keylightMap = new Map<string, KeylightMapItem>();
+				const keylightMap = new Map<string, KeylightMapItem>();
 
-			for (const keylight of res as ScanResponse[]) {
-				const config = await getKeylightConfig({
-					hostname: keylight.hostname,
+				for (const keylight of res as ScanResponse[]) {
+					const config = await getKeylightConfig({
+						hostname: keylight.hostname,
+					});
+
+					keylightMap.set(keylight.hostname, {
+						...config,
+						hostname: keylight.hostname,
+					});
+				}
+
+				const keylightArray = Array.from(keylightMap.values()).sort((a, b) => {
+					return a.displayName.localeCompare(b.displayName);
 				});
 
-				keylightMap.set(keylight.hostname, {
-					...config,
-					hostname: keylight.hostname,
-				});
+				for (const keylightConfig of keylightArray) {
+					queryClient.setQueryData<GetKeylightConfigResponse>(
+						getKeylightConfigQueryOptions({ hostname: keylightConfig.hostname })
+							.queryKey,
+						keylightConfig,
+					);
+				}
+
+				return keylightArray.map((keylight) => keylight.hostname);
+			} catch (e) {
+				console.error(e);
 			}
 
-			const keylightArray = Array.from(keylightMap.values()).sort((a, b) => {
-				return a.displayName.localeCompare(b.displayName);
-			});
-
-			for (const keylightConfig of keylightArray) {
-				queryClient.setQueryData<GetKeylightConfigResponse>(
-					getKeylightConfigQueryOptions({ hostname: keylightConfig.hostname })
-						.queryKey,
-					keylightConfig,
-				);
-			}
-
-			return keylightArray.map((keylight) => keylight.hostname);
+			return [];
 		},
 		enabled: false,
 	});
