@@ -1,5 +1,6 @@
 use mdns_sd::{ServiceDaemon, ServiceEvent};
 use tauri::{
+    image::Image,
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager,
@@ -74,25 +75,39 @@ pub fn run() {
             let menu = Menu::with_items(
                 app,
                 &[
-                    &MenuItem::with_id(app, "show", "Show (Always on top)", true, None::<&str>)?,
-                    &MenuItem::with_id(app, "show-alt", "Show", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "show", "Show", true, None::<&str>)?,
+                    &MenuItem::with_id(
+                        app,
+                        "show-on-top",
+                        "Show (Always on top)",
+                        true,
+                        None::<&str>,
+                    )?,
                     &MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?,
                     &PredefinedMenuItem::separator(app)?,
                     &MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?,
                 ],
             )?;
 
+            let icon: Image<'_> = app.default_window_icon().unwrap().clone();
+            #[cfg(target_os = "macos")]
+            let icon: Image<'_> = Image::from_path("icons/macos-tray.png")?;
+
+            let is_template = cfg!(target_os = "macos");
+
             TrayIconBuilder::new()
+                .icon(icon)
+                .icon_as_template(is_template)
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
-                    "show" => {
+                    "show-on-top" => {
                         let window = app.get_webview_window("main").unwrap();
                         let _ = window.show();
                         let _ = window.set_focus();
                         let _ = window.set_always_on_top(true);
                     }
-                    "show-alt" => {
+                    "show" => {
                         let window = app.get_webview_window("main").unwrap();
                         let _ = window.show();
                         let _ = window.set_focus();
@@ -125,13 +140,10 @@ pub fn run() {
                             } else {
                                 let _ = window.show();
                                 let _ = window.set_focus();
-                                let _ = window.set_always_on_top(true);
                             }
                         }
                     }
-                    _ => {
-                        println!("unhandled event {event:?}");
-                    }
+                    _ => {}
                 })
                 .build(app)?;
 
