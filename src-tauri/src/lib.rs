@@ -2,6 +2,7 @@ use mdns_sd::{ServiceDaemon, ServiceEvent};
 use tauri::{
     image::Image,
     menu::{Menu, MenuItem, PredefinedMenuItem},
+    path::BaseDirectory,
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager,
 };
@@ -60,7 +61,7 @@ async fn scan() -> Vec<ElgatoService> {
     });
 
     // Gracefully shutdown the daemon.
-    std::thread::sleep(std::time::Duration::from_secs(3));
+    std::thread::sleep(std::time::Duration::from_secs(5));
     daemon.shutdown().unwrap();
     println!("DAEMON: Shutdown");
 
@@ -100,9 +101,13 @@ pub fn run() {
                 ],
             )?;
 
+            let macos_icon_path: std::path::PathBuf = app
+                .path()
+                .resolve("icons/macos-tray.png", BaseDirectory::Resource)?;
+
             let icon: Image<'_> = app.default_window_icon().unwrap().clone();
             #[cfg(target_os = "macos")]
-            let icon: Image<'_> = Image::from_path("icons/macos-tray.png")?;
+            let icon: Image<'_> = Image::from_path(macos_icon_path)?;
 
             let is_template = cfg!(target_os = "macos");
 
