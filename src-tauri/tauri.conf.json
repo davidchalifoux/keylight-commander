@@ -44,7 +44,7 @@
     "active": true,
     "createUpdaterArtifacts": true,
     "resources": [
-      "icons/macos-tray.png"
+      "icons/*"
     ],
     "targets": "all",
     "icon": [
