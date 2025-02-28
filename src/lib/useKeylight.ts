@@ -46,6 +46,11 @@ export const useKeylight = (args: { hostname: string }) => {
 		power: stateQuery.data?.on ?? 0,
 	};
 
+	const disabled =
+		stateQuery.error !== null ||
+		configQuery.error !== null ||
+		!stateQuery.isFetched;
+
 	const stateMutation = useRequest(putKeylightState, {
 		manual: true,
 		debounceWait: 100,
@@ -106,6 +111,10 @@ export const useKeylight = (args: { hostname: string }) => {
 		value: number,
 		options?: { ignoreGlobalSync: boolean },
 	) {
+		if (disabled) {
+			return;
+		}
+
 		await queryClient.cancelQueries({
 			queryKey: getKeylightStateQueryOptions({ hostname: args.hostname })
 				.queryKey,
@@ -138,6 +147,10 @@ export const useKeylight = (args: { hostname: string }) => {
 		value: number,
 		options?: { ignoreGlobalSync: boolean },
 	) {
+		if (disabled) {
+			return;
+		}
+
 		await queryClient.cancelQueries({
 			queryKey: getKeylightStateQueryOptions({ hostname: args.hostname })
 				.queryKey,
@@ -170,6 +183,10 @@ export const useKeylight = (args: { hostname: string }) => {
 		value: number,
 		options?: { ignoreGlobalSync: boolean },
 	) {
+		if (disabled) {
+			return;
+		}
+
 		await queryClient.cancelQueries({
 			queryKey: getKeylightStateQueryOptions({ hostname: args.hostname })
 				.queryKey,
@@ -255,5 +272,6 @@ export const useKeylight = (args: { hostname: string }) => {
 		setPower: setPower,
 		setDisplayName: setDisplayName,
 		identify: identify,
+		disabled: disabled,
 	};
 };
