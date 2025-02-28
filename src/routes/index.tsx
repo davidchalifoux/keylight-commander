@@ -45,10 +45,7 @@ function RouteComponent() {
 	return (
 		<Layout
 			header={
-				<div
-					data-tauri-drag-region
-					className="flex px-2 h-full w-full items-center justify-between gap-2"
-				>
+				<div className="flex px-2 h-full w-full items-center justify-between gap-2">
 					<TooltipProvider>
 						<div>
 							<Button
