@@ -20,10 +20,6 @@ export const Route = createFileRoute("/settings")({
 function RouteComponent() {
 	const globalSync = useSettings((state) => state.globalSync);
 	const setGlobalSync = useSettings((state) => state.setGlobalSync);
-	const hideOnFocusChanged = useSettings((state) => state.hideOnFocusChanged);
-	const setHideOnFocusChanged = useSettings(
-		(state) => state.setHideOnFocusChanged,
-	);
 
 	const version = useQuery({
 		queryKey: ["version"],
@@ -35,10 +31,7 @@ function RouteComponent() {
 	return (
 		<Layout
 			header={
-				<div
-					data-tauri-drag-region
-					className="flex px-2 h-full w-full items-center gap-2"
-				>
+				<div className="flex px-2 h-full w-full items-center gap-2">
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
@@ -74,25 +67,6 @@ function RouteComponent() {
 						</label>
 						<p className="text-sm text-neutral-500">
 							All controls move in sync.
-						</p>
-					</div>
-				</div>
-
-				<div className="items-top flex space-x-2">
-					<Checkbox
-						id="hideOnFocusChanged"
-						checked={hideOnFocusChanged}
-						onClick={() => setHideOnFocusChanged(!hideOnFocusChanged)}
-					/>
-					<div className="grid gap-1.5 leading-none">
-						<label
-							htmlFor="hideOnFocusChanged"
-							className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-						>
-							Hide on focus changed
-						</label>
-						<p className="text-sm text-neutral-500">
-							Automatically hide the window when it loses focus.
 						</p>
 					</div>
 				</div>

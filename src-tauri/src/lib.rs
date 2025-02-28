@@ -78,6 +78,15 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![scan])
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                // Prevent the window from closing
+                api.prevent_close();
+                // Hide the window instead
+                let _ = window.hide();
+            }
+            _ => {}
+        })
         .setup(|app| {
             // Set the activation policy to Accessory on macOS
             // This will prevent the app from appearing in the dock
@@ -150,9 +159,12 @@ pub fn run() {
                         let app = tray.app_handle();
                         if let Some(window) = app.get_webview_window("main") {
                             let visible = window.is_visible().unwrap();
+                            let focused = window.is_focused().unwrap();
 
-                            if visible {
+                            if focused {
                                 let _ = window.hide();
+                            } else if visible {
+                                let _ = window.set_focus();
                             } else {
                                 let _ = window.show();
                                 let _ = window.set_focus();
