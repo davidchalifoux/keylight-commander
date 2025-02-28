@@ -17,27 +17,77 @@ import {
 	Settings,
 	Sun,
 	Thermometer,
+	Trash,
 } from "lucide-react";
 import { Layout } from "@/components/layout";
 import { useQueries } from "@tanstack/react-query";
 import { getKeylightStateQueryOptions } from "@/lib/getKeylightState";
-import { useScan } from "@/lib/scan";
+import { useKeylights } from "@/lib/useKeylights";
+import type React from "react";
+import { useState } from "react";
+import {
+	getKeylightConfig,
+	type GetKeylightConfigResponse,
+} from "@/lib/getKeylightConfig";
+import { invoke } from "@tauri-apps/api/core";
+
+interface ScanResponse {
+	hostname: string;
+}
+
+type KeylightMapItem = ScanResponse & GetKeylightConfigResponse;
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const scan = useScan();
+	const [scanning, setScanning] = useState(false);
+	const keylights = useKeylights((state) => state.keylights);
+	const setKeylights = useKeylights((state) => state.setKeylights);
 	const setGlobalPower = useGlobalState((state) => state.setGlobalPower);
 
+	async function scan() {
+		setScanning(true);
+
+		try {
+			const res = await invoke<ScanResponse[]>("scan");
+
+			const keylightMap = new Map<string, KeylightMapItem>();
+
+			for (const keylight of res) {
+				try {
+					const config = await getKeylightConfig({
+						hostname: keylight.hostname,
+					});
+
+					keylightMap.set(keylight.hostname, {
+						...config,
+						hostname: keylight.hostname,
+					});
+				} catch (e) {
+					console.error("Unable to get keylight config", e);
+				}
+			}
+
+			const keylightArray = Array.from(keylightMap.values()).sort((a, b) => {
+				return a.displayName.localeCompare(b.displayName);
+			});
+
+			setKeylights(keylightArray.map((keylight) => keylight.hostname));
+		} catch (e) {
+			console.error(e);
+		} finally {
+			setScanning(false);
+		}
+	}
+
 	const queries = useQueries({
-		queries:
-			scan.data?.map((item) => {
-				return getKeylightStateQueryOptions({
-					hostname: item,
-				});
-			}) ?? [],
+		queries: keylights.map((item) => {
+			return getKeylightStateQueryOptions({
+				hostname: item,
+			});
+		}),
 	});
 
 	const allOn = queries.every((query) => query.data?.on === 1) ? 1 : 0;
@@ -65,10 +115,10 @@ function RouteComponent() {
 									<Button
 										variant="ghost"
 										size="icon-sm"
-										onClick={() => scan.refetch()}
-										disabled={scan.isFetching}
+										onClick={() => scan()}
+										disabled={scanning}
 									>
-										{scan.isFetching ? (
+										{scanning ? (
 											<Loader2 className="animate-spin" />
 										) : (
 											<ScanEye />
@@ -97,7 +147,7 @@ function RouteComponent() {
 				</div>
 			}
 		>
-			{!scan.data?.length && (
+			{keylights.length === 0 && (
 				<div className="flex flex-col items-center pt-16">
 					<div className="text-center">
 						<h3 className="mt-2 text-sm font-semibold text-neutral-100">
@@ -107,7 +157,7 @@ function RouteComponent() {
 							Get started by scanning for lights.
 						</p>
 						<div className="mt-6">
-							<Button onClick={() => scan.refetch()} disabled={scan.isFetching}>
+							<Button onClick={() => scan()} disabled={scanning}>
 								Scan for lights
 							</Button>
 						</div>
@@ -115,13 +165,13 @@ function RouteComponent() {
 				</div>
 			)}
 
-			{scan.data && (
+			{keylights.length > 0 && (
 				<div className="flex flex-col px-2">
-					{scan.data.map((item, i) => {
+					{keylights.map((item, i) => {
 						return (
 							<div key={item}>
 								<Keylight hostname={item} />
-								{i < scan.data.length - 1 && (
+								{i < keylights.length - 1 && (
 									<div className="border-t border-neutral-800 my-2" />
 								)}
 							</div>
@@ -141,6 +191,7 @@ function Keylight(props: KeylightProps) {
 	const keylight = useKeylight({
 		hostname: props.hostname,
 	});
+	const removeKeylight = useKeylights((state) => state.removeKeylight);
 
 	function getPowerButtonVariant() {
 		if (
@@ -151,6 +202,48 @@ function Keylight(props: KeylightProps) {
 		}
 
 		return keylight.power ? "default" : "secondary";
+	}
+
+	function remove() {
+		removeKeylight(props.hostname);
+	}
+
+	function ConfigButton(): React.ReactNode {
+		if (
+			keylight.stateQuery.error !== null ||
+			keylight.configQuery.error !== null
+		) {
+			return (
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button variant="ghost" size="icon-sm" onClick={() => remove()}>
+							<Trash />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p>Remove</p>
+					</TooltipContent>
+				</Tooltip>
+			);
+		}
+
+		return (
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button variant="ghost" size="icon-sm" asChild>
+						<Link
+							to={"/keylight/$hostname"}
+							params={{ hostname: props.hostname }}
+						>
+							<EllipsisVertical />
+						</Link>
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					<p>Details</p>
+				</TooltipContent>
+			</Tooltip>
+		);
 	}
 
 	return (
@@ -181,26 +274,7 @@ function Keylight(props: KeylightProps) {
 					{keylight.configQuery.data?.displayName}
 				</p>
 
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							disabled={keylight.stateQuery.isError}
-							asChild
-						>
-							<Link
-								to={"/keylight/$hostname"}
-								params={{ hostname: props.hostname }}
-							>
-								<EllipsisVertical />
-							</Link>
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent>
-						<p>Details</p>
-					</TooltipContent>
-				</Tooltip>
+				<ConfigButton />
 
 				<div className="col-start-2">
 					{/* Color Temp */}
