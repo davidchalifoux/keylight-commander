@@ -16,6 +16,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useKeylight } from "@/lib/useKeylight";
+import { useKeylights } from "@/lib/useKeylights";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 
@@ -28,9 +29,15 @@ function RouteComponent() {
 	const params = Route.useParams();
 
 	const keylight = useKeylight({ hostname: params.hostname });
+	const removeKeylight = useKeylights((state) => state.removeKeylight);
 
 	if (!keylight) {
 		return router.navigate({ to: "/" });
+	}
+
+	function remove() {
+		removeKeylight(params.hostname);
+		router.navigate({ to: "/" });
 	}
 
 	return (
@@ -125,13 +132,15 @@ function RouteComponent() {
 					</TableBody>
 				</Table>
 
-				<div>
+				<div className="flex gap-2">
 					<Button
 						disabled={keylight.identify.isPending}
 						onClick={() => keylight.identify.mutate()}
 					>
 						Identify
 					</Button>
+
+					<Button onClick={() => remove()}>Remove</Button>
 				</div>
 			</div>
 		</Layout>
