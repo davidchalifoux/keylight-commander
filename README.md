@@ -9,21 +9,22 @@
 
 Keylight Commander is an open-source and cross-platform application for controlling [Elgato Key Lights](https://www.elgato.com/us/en/p/key-light).
 
-## Screenshot
+## Screenshots
 
 <p>
-    <img src="./readme-images/screenshot.png" width="430" alt="Keylight Commander App Icon" />
+    <img src="./readme-images/screenshot-home.png" width="430" alt="App screenshot" />
+    <img src="./readme-images/screenshot-config.png" width="430" alt="App screenshot" />
+    <img src="./readme-images/screenshot-settings.png" width="430" alt="App screenshot" />
 </p>
 
 ## Features
 
+- Support for macOS, Windows, and Linux
 - Adjust brightness, color temperature, and power
 - Sync adjustments to all lights
 - Give lights nicknames
 - Automatic light discovery via mDNS
-- Manually add lights by IP
 - Uses minimal resources
-- Support for macOS, Windows, and Linux
 
 ## Installation
 
