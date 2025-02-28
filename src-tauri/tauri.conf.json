@@ -47,6 +47,11 @@
       "icons/*"
     ],
     "license": "MIT",
+    "homepage": "https://github.com/davidchalifoux/keylight-commander",
+    "shortDescription": "Cross-platform application for controlling Elgato Key Lights.",
+    "longDescription": "Keylight Commander is an open-source and cross-platform application for controlling Elgato Key Lights.",
+    "publisher": "David Chalifoux",
+    "category": "Utility",
     "targets": "all",
     "icon": [
       "icons/32x32.png",
