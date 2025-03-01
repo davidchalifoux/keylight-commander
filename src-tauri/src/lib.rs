@@ -96,27 +96,32 @@ pub fn run() {
             let menu = Menu::with_items(
                 app,
                 &[
-                    &MenuItem::with_id(app, "show", "Show", true, None::<&str>)?,
+                    &MenuItem::with_id(app, "open", "Open", true, None::<&str>)?,
                     &MenuItem::with_id(
                         app,
-                        "show-on-top",
-                        "Show (Always on top)",
+                        "open-on-top",
+                        "Open (Always on top)",
                         true,
                         None::<&str>,
                     )?,
-                    &MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?,
                     &PredefinedMenuItem::separator(app)?,
                     &MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?,
                 ],
             )?;
 
-            let macos_icon_path: std::path::PathBuf = app
-                .path()
-                .resolve("icons/macos-tray.png", BaseDirectory::Resource)?;
-
-            let icon: Image<'_> = app.default_window_icon().unwrap().clone();
-            #[cfg(target_os = "macos")]
-            let icon: Image<'_> = Image::from_path(macos_icon_path)?;
+            let icon: Image<'_> = {
+                #[cfg(target_os = "macos")]
+                {
+                    let macos_icon_path: std::path::PathBuf = app
+                        .path()
+                        .resolve("icons/macos-tray.png", BaseDirectory::Resource)?;
+                    Image::from_path(macos_icon_path)?
+                }
+                #[cfg(not(target_os = "macos"))]
+                {
+                    app.default_window_icon().unwrap().clone()
+                }
+            };
 
             let is_template = cfg!(target_os = "macos");
 
@@ -126,28 +131,25 @@ pub fn run() {
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
-                    "show-on-top" => {
+                    "open-on-top" => {
                         let window = app.get_webview_window("main").unwrap();
+
                         let _ = window.show();
+                        let _ = window.center();
                         let _ = window.set_focus();
                         let _ = window.set_always_on_top(true);
                     }
-                    "show" => {
+                    "open" => {
                         let window = app.get_webview_window("main").unwrap();
+
                         let _ = window.show();
+                        let _ = window.center();
                         let _ = window.set_focus();
                     }
-                    "hide" => {
-                        let window = app.get_webview_window("main").unwrap();
-                        let _ = window.hide();
-                    }
                     "quit" => {
-                        println!("quit menu item was clicked");
                         app.exit(0);
                     }
-                    _ => {
-                        println!("menu item {:?} not handled", event.id);
-                    }
+                    _ => {}
                 })
                 .on_tray_icon_event(|tray, event| match event {
                     TrayIconEvent::Click {
