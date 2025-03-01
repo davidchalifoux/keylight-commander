@@ -145,6 +145,7 @@ pub fn run() {
                         let _ = window.show();
                         let _ = window.center();
                         let _ = window.set_focus();
+                        let _ = window.set_always_on_top(false);
                     }
                     "quit" => {
                         app.exit(0);
