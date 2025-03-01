@@ -25,6 +25,7 @@
     "macOSPrivateApi": false,
     "windows": [
       {
+        "label": "main",
         "title": "Keylight Commander",
         "hiddenTitle": true,
         "width": 400,
@@ -32,10 +33,7 @@
         "height": 400,
         "minHeight": 300,
         "center": true,
-        "transparent": false,
-        "decorations": true,
-        "skipTaskbar": true,
-        "visible": true
+        "skipTaskbar": false
       }
     ],
     "security": {
