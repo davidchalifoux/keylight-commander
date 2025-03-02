@@ -71,9 +71,9 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
-          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'v__VERSION__'
+          tagName: v__VERSION__-beta # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: 'v__VERSION__-beta'
           releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: true
           args: ${{ matrix.args }}
