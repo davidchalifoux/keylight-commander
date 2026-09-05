@@ -1,5 +1,5 @@
 use std::{
-    io::{Read, Write},
+    io::{BufRead, BufReader, Write},
     net::TcpStream,
     time::Duration,
 };
@@ -132,13 +132,11 @@ fn set_light_power(light: &ElgatoService, power: PowerState) -> Result<(), Strin
         .write_all(request.as_bytes())
         .map_err(|error| format!("Could not send request to {}: {error}", light.hostname))?;
 
-    let mut response = String::new();
+    let mut status_line = String::new();
 
-    stream
-        .read_to_string(&mut response)
+    BufReader::new(stream)
+        .read_line(&mut status_line)
         .map_err(|error| format!("Could not read response from {}: {error}", light.hostname))?;
-
-    let status_line = response.lines().next().unwrap_or_default();
 
     let successful = status_line
         .split_whitespace()
