@@ -2,5 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    tauri_v2_lib::run()
+    let args = parse_args();
+
+    if let Some(power) = args.power {
+        let result = tauri_v2_lib::set_all_lights_power(power);
+        std::process::exit(if result.is_ok() { 0 } else { 1 });
+    }
+
+    tauri_v2_lib::run();
 }
